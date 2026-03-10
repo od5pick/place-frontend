@@ -42,11 +42,12 @@ export default function Home({ onResult }) {
   }
 
   async function checkHealth() {
+    setHealth({ checking: true });
     try {
       const h = await engineHealth();
       setHealth(h);
     } catch (e) {
-      setHealth({ error: e.message });
+      setHealth({ error: e?.message || "연결 실패", raw: String(e) });
     }
   }
 
@@ -156,8 +157,10 @@ export default function Home({ onResult }) {
       </section>
 
       <div className="home-health-row">
-        <button onClick={checkHealth} className="home-btn-health">서버 상태 확인</button>
-        {health && (
+        <button onClick={checkHealth} className="home-btn-health" disabled={health?.checking}>
+          {health?.checking ? "확인 중…" : "서버 상태 확인"}
+        </button>
+        {health && !health.checking && (
           <pre className="home-health-pre">{JSON.stringify(health, null, 2)}</pre>
         )}
       </div>
