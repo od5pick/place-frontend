@@ -1,0 +1,315 @@
+/* Home Page - PC 버전 넓은 해상도 */
+.home-page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding: 0 24px 60px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  color: #1f2937;
+}
+
+/* Header */
+.home-header {
+  padding: 40px 0 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-logo-text h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a2332;
+}
+
+.home-logo-text p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+/* Card */
+.home-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 36px 32px;
+  box-shadow: 0 2px 20px rgba(0,0,0,.08);
+}
+
+.home-card-title h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a2332;
+}
+
+.home-card-title p {
+  margin: 0 0 20px;
+  font-size: 15px;
+  color: #6b7280;
+}
+
+/* Mode tabs (URL 검색 / 지도에서 선택) */
+.home-mode-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  padding: 4px;
+}
+
+.home-mode-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b7280;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.home-mode-tab:hover {
+  color: #1f2937;
+}
+
+.home-mode-tab--active {
+  background: #fff;
+  color: #03c75a;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+
+/* Industry row */
+.home-industry-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.home-industry-row label {
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.home-select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 14px;
+  color: #1f2937;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.home-select:focus {
+  border-color: #03c75a;
+}
+
+/* Search row */
+.home-search-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.home-input {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #d1d5db;
+  font-size: 14px;
+  color: #1f2937;
+  background: #f9fafb;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.home-input:focus {
+  border-color: #03c75a;
+  background: #fff;
+}
+
+.home-input:disabled {
+  opacity: .5;
+}
+
+.home-btn-diagnose {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 13px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #03c75a;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .2s, opacity .2s;
+}
+
+.home-btn-diagnose:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+.home-btn-diagnose:not(:disabled):hover {
+  background: #02b350;
+}
+
+/* Spinner */
+.home-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* Full-page loading overlay when diagnosing */
+.home-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.home-loading-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  background: #111827;
+  color: #f9fafb;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+}
+
+.home-loading-box .home-spinner {
+  width: 18px;
+  height: 18px;
+  border-width: 3px;
+}
+
+.home-loading-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.home-loading-text strong {
+  font-weight: 700;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* URL example */
+.home-url-example {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.home-example-label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.home-example-url {
+  font-family: monospace;
+  word-break: break-all;
+}
+
+/* Error */
+.home-error {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+/* Health */
+.home-health-row {
+  max-width: 1200px;
+  margin: 24px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.home-btn-health {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #4b5563;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+
+.home-btn-health:hover {
+  border-color: #03c75a;
+  color: #03c75a;
+}
+
+.home-health-pre {
+  width: 100%;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 12px;
+  overflow-x: auto;
+  color: #374151;
+}
+
+@media (max-width: 768px) {
+  .home-card {
+    padding: 24px 20px;
+  }
+  .home-header {
+    padding: 28px 0 20px;
+  }
+  .home-logo-text h1 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-search-row {
+    flex-direction: column;
+  }
+  .home-btn-diagnose {
+    width: 100%;
+    justify-content: center;
+  }
+}
