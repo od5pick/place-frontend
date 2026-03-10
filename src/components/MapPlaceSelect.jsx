@@ -52,6 +52,22 @@ function loadNaverMaps() {
   return mapsPromise;
 }
 
+function geocodeOnce(naver, address) {
+  return new Promise((resolve) => {
+    if (!address) return resolve(null);
+    naver.maps.Service.geocode({ query: address }, (status, response) => {
+      if (status !== naver.maps.Service.Status.OK || !response?.v2?.addresses?.length) {
+        return resolve(null);
+      }
+      const first = response.v2.addresses[0];
+      const lat = Number(first.y);
+      const lng = Number(first.x);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return resolve(null);
+      resolve(new naver.maps.LatLng(lat, lng));
+    });
+  });
+}
+
 export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStart, loading }) {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -90,56 +106,60 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
   useEffect(() => {
     if (!mapRef.current || !window.naver || !window.naver.maps) return;
     const naver = window.naver;
+    let cancelled = false;
 
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    if (!results.items.length) return;
+    if (!results.items.length) {
+      setMarkerCount(0);
+      return;
+    }
 
     const bounds = new naver.maps.LatLngBounds();
 
-    // 검색 결과마다 예제와 동일하게: position(LatLng) + map 으로 마커 표시
-    results.items.forEach((item, index) => {
-      const x = Number(item.mapx ?? item.mapX);
-      const y = Number(item.mapy ?? item.mapY);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    (async () => {
+      for (let index = 0; index < results.items.length; index += 1) {
+        if (cancelled) break;
+        const item = results.items[index];
+        const addr = item.roadAddress || item.address;
+        if (!addr) continue;
+        const position = await geocodeOnce(naver, addr);
+        if (!position || cancelled) continue;
 
-      let position;
-      // 네이버 지역 검색 API: 값이 1e7 스케일(126xxxxxxx, 37xxxxxx)이면 WGS84 위경도×1e7
-      const isWgs84Scaled = x > 1e7 && y > 1e6 && x < 2e9 && y < 5e8;
-      if (isWgs84Scaled) {
-        position = new naver.maps.LatLng(y / 1e7, x / 1e7);
-      } else {
+        const marker = new naver.maps.Marker({
+          position,
+          map: mapRef.current,
+        });
+
+        marker.addListener("click", () => {
+          setSelectedIndex(index);
+          mapRef.current.panTo(position);
+        });
+
+        markersRef.current.push(marker);
+        bounds.extend(position);
+      }
+
+      if (cancelled) return;
+
+      if (markersRef.current.length > 0) {
         try {
-          position = naver.maps.TransCoord.fromTM128ToLatLng(new naver.maps.Point(x, y));
+          mapRef.current.fitBounds(bounds);
         } catch (_) {
-          return;
+          // ignore
         }
+      } else if (results.items.length > 0) {
+        console.warn("[지도] 마커 0개 - 주소 지오코딩 실패. 첫 항목:", results.items[0]);
       }
-      const marker = new naver.maps.Marker({
-        position,
-        map: mapRef.current,
-      });
+      setMarkerCount(markersRef.current.length);
+    })();
 
-      marker.addListener("click", () => {
-        setSelectedIndex(index);
-        mapRef.current.panTo(position);
-      });
-
-      markersRef.current.push(marker);
-      bounds.extend(position);
-    });
-
-    if (markersRef.current.length > 0) {
-      try {
-        mapRef.current.fitBounds(bounds);
-      } catch (_) {
-        // fitBounds 실패 시 무시 (API 버전 차이 등)
-      }
-    } else if (results.items.length > 0) {
-      console.warn("[지도] 마커 0개 - 좌표 없음 또는 변환 실패. 첫 항목 mapx/mapy:", results.items[0]?.mapx, results.items[0]?.mapy);
-    }
-    setMarkerCount(markersRef.current.length);
+    return () => {
+      cancelled = true;
+      markersRef.current.forEach((m) => m.setMap(null));
+      markersRef.current = [];
+    };
   }, [results.items]);
 
   async function handleSearch() {
