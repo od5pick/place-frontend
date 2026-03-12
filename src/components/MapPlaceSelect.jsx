@@ -127,15 +127,52 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
         const position = await geocodeOnce(naver, addr);
         if (!position || cancelled) continue;
 
+        // ✅ 마커 핀 아이콘 + 업체명을 마커 라벨로 표시
         const marker = new naver.maps.Marker({
           position,
           map: mapRef.current,
+          title: item.title || `업체 ${index + 1}`,
+          icon: {
+            content: `
+              <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+              ">
+                <!-- 핀 아이콘 -->
+                <svg width="24" height="32" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 0C6.48 0 2 4.48 2 10c0 7 10 22 10 22s10-15 10-22c0-5.52-4.48-10-10-10z" fill="#03C75A"/>
+                  <circle cx="12" cy="10" r="3" fill="white"/>
+                </svg>
+                <!-- 업체명 -->
+                <div style="
+                  background: white;
+                  border: 2px solid #03C75A;
+                  border-radius: 4px;
+                  padding: 4px 8px;
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: #333;
+                  white-space: nowrap;
+                  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                ">
+                  ${item.title || `업체 ${index + 1}`}
+                </div>
+              </div>
+            `,
+            size: new naver.maps.Size(120, 80),
+            anchor: new naver.maps.Point(60, 80),
+          }
         });
 
         marker.addListener("click", () => {
           setSelectedIndex(index);
           mapRef.current.panTo(position);
         });
+
+        // ✅ 마커 객체에 index 저장 (선택 시 스타일 변경용)
+        marker._placeIndex = index;
 
         markersRef.current.push(marker);
         bounds.extend(position);
@@ -161,6 +198,84 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
       markersRef.current = [];
     };
   }, [results.items]);
+
+  // ✅ selectedIndex 변경 시 마커 강조 처리
+  useEffect(() => {
+    if (!window.naver || !window.naver.maps) return;
+    const naver = window.naver;
+
+    markersRef.current.forEach((marker, i) => {
+      if (i === selectedIndex) {
+        // 선택된 마커: 핀 아이콘 + 강조 스타일
+        marker.setIcon({
+          content: `
+            <div style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 2px;
+            ">
+              <!-- 핀 아이콘 (흰색) -->
+              <svg width="28" height="38" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 0C6.48 0 2 4.48 2 10c0 7 10 22 10 22s10-15 10-22c0-5.52-4.48-10-10-10z" fill="white"/>
+                <circle cx="12" cy="10" r="3" fill="#03C75A"/>
+              </svg>
+              <!-- 업체명 (강조) -->
+              <div style="
+                background: #03C75A;
+                border: 3px solid white;
+                border-radius: 4px;
+                padding: 6px 10px;
+                font-size: 13px;
+                font-weight: 700;
+                color: white;
+                white-space: nowrap;
+                box-shadow: 0 4px 8px rgba(3, 199, 90, 0.3);
+              ">
+                ${results.items[i]?.title || `업체 ${i + 1}`}
+              </div>
+            </div>
+          `,
+          size: new naver.maps.Size(140, 100),
+          anchor: new naver.maps.Point(70, 100),
+        });
+      } else {
+        // 미선택 마커: 기본 스타일
+        marker.setIcon({
+          content: `
+            <div style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 2px;
+            ">
+              <!-- 핀 아이콘 -->
+              <svg width="24" height="32" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 0C6.48 0 2 4.48 2 10c0 7 10 22 10 22s10-15 10-22c0-5.52-4.48-10-10-10z" fill="#03C75A"/>
+                <circle cx="12" cy="10" r="3" fill="white"/>
+              </svg>
+              <!-- 업체명 -->
+              <div style="
+                background: white;
+                border: 2px solid #03C75A;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 12px;
+                font-weight: 600;
+                color: #333;
+                white-space: nowrap;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              ">
+                ${results.items[i]?.title || `업체 ${i + 1}`}
+              </div>
+            </div>
+          `,
+          size: new naver.maps.Size(120, 80),
+          anchor: new naver.maps.Point(60, 80),
+        });
+      }
+    });
+  }, [selectedIndex, results.items]);
 
   async function handleSearch() {
     const q = (query || mapQuery || `${industryLabel}`).trim();
