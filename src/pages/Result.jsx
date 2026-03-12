@@ -37,7 +37,6 @@ const KEY_TO_KOREAN = {
   directions: "오시는길",
   keywords: "대표키워드",
   reviews: "리뷰",
-  photos: "사진",
   price: "가격/메뉴",
 };
 
@@ -89,13 +88,12 @@ function placeAddress(data) {
   return inner.placeData?.address || "";
 }
 
-// 백엔드 engine.ts와 동일한 6개 항목 (순서 유지 → 오시는길, 가격/메뉴 포함)
+// 백엔드 engine.ts와 동일한 항목 (사진은 제외, 크롤링 미지원)
 const RESULT_CATEGORIES = [
   { key: "description", title: "상세설명" },
   { key: "directions", title: "오시는길" },
   { key: "keywords", title: "대표키워드" },
   { key: "reviews", title: "리뷰" },
-  { key: "photos", title: "사진" },
   { key: "price", title: "가격/메뉴" },
 ];
 
