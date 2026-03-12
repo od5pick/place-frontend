@@ -147,22 +147,23 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
                 </svg>
                 <!-- 업체명 -->
                 <div style="
-                  background: white;
-                  border: 2px solid #03C75A;
-                  border-radius: 4px;
+                  background: transparent;
                   padding: 4px 8px;
                   font-size: 12px;
                   font-weight: 600;
                   color: #333;
-                  white-space: nowrap;
-                  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  white-space: normal;
+                  word-break: break-word;
+                  max-width: 100px;
+                  text-align: center;
+                  line-height: 1.4;
                 ">
                   ${item.title || `업체 ${index + 1}`}
                 </div>
               </div>
             `,
-            size: new naver.maps.Size(120, 80),
-            anchor: new naver.maps.Point(60, 80),
+            size: new naver.maps.Size(120, 100),
+            anchor: new naver.maps.Point(60, 100),
           }
         });
 
@@ -222,15 +223,18 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
               </svg>
               <!-- 업체명 (강조) -->
               <div style="
-                background: #03C75A;
-                border: 3px solid white;
+                background: rgba(3, 199, 90, 0.85);
+                border: none;
                 border-radius: 4px;
                 padding: 6px 10px;
                 font-size: 13px;
                 font-weight: 700;
                 color: white;
-                white-space: nowrap;
-                box-shadow: 0 4px 8px rgba(3, 199, 90, 0.3);
+                white-space: normal;
+                word-break: break-word;
+                max-width: 110px;
+                text-align: center;
+                line-height: 1.4;
               ">
                 ${results.items[i]?.title || `업체 ${i + 1}`}
               </div>
@@ -256,22 +260,25 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
               </svg>
               <!-- 업체명 -->
               <div style="
-                background: white;
-                border: 2px solid #03C75A;
+                background: transparent;
+                border: none;
                 border-radius: 4px;
                 padding: 4px 8px;
                 font-size: 12px;
                 font-weight: 600;
                 color: #333;
-                white-space: nowrap;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                white-space: normal;
+                word-break: break-word;
+                max-width: 100px;
+                text-align: center;
+                line-height: 1.4;
               ">
                 ${results.items[i]?.title || `업체 ${i + 1}`}
               </div>
             </div>
           `,
-          size: new naver.maps.Size(120, 80),
-          anchor: new naver.maps.Point(60, 80),
+          size: new naver.maps.Size(120, 100),
+          anchor: new naver.maps.Point(60, 100),
         });
       }
     });
