@@ -61,7 +61,22 @@ function scoreValue(data, key, index) {
 
 function totalValue(data) {
   const inner = getInner(data);
-  return pick(inner, "totalScore", "score") ?? 0;
+  
+  // ✅ 5개 항목(사진 제외)으로 항상 평균 계산
+  const scores = inner.scores || {};
+  const scores_array = [
+    getScoreFromScores(scores, "description", 0),  // 상세설명
+    getScoreFromScores(scores, "directions", 1),   // 오시는길
+    getScoreFromScores(scores, "keywords", 2),     // 대표키워드
+    getScoreFromScores(scores, "reviews", 3),      // 리뷰
+    getScoreFromScores(scores, "price", 4),        // 가격/메뉴
+  ];
+  
+  // 평균 계산
+  const total = scores_array.reduce((a, b) => a + b, 0);
+  const average = Math.round(total / 5);
+  
+  return average || 0;
 }
 
 function gradeValue(data) {
