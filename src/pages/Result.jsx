@@ -95,12 +95,14 @@ function sectionExplain(data, key, index) {
 
 function placeName(data) {
   const inner = getInner(data);
-  return inner.placeData?.name || "";
+  // ✅ 지도에서 전달받은 이름 우선, 없으면 무료 진단 결과에서
+  return data?.mapPlaceInfo?.name || inner.placeData?.name || "";
 }
 
 function placeAddress(data) {
   const inner = getInner(data);
-  return inner.placeData?.address || "";
+  // ✅ 지도에서 전달받은 주소 우선, 없으면 무료 진단 결과에서
+  return data?.mapPlaceInfo?.address || inner.placeData?.address || "";
 }
 
 // 백엔드 engine.ts와 동일한 항목 (사진은 제외, 크롤링 미지원)

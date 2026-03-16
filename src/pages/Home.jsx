@@ -23,7 +23,7 @@ export default function Home({ onResult }) {
   const [health, setHealth]     = useState(null);
   const [error, setError]       = useState("");
 
-  async function runWithUrl(placeUrl) {
+  async function runWithUrl(placeUrl, placeInfo) {
     const u = (placeUrl || url || "").trim();
     if (!u) {
       setError("네이버 플레이스 URL을 입력하세요.");
@@ -33,7 +33,8 @@ export default function Home({ onResult }) {
     setLoading(true);
     try {
       const data = await diagnoseFree(u, industry);
-      onResult({ data, placeUrl: u, industry });
+      // ✅ 지도에서 전달받은 이름/주소 정보도 함께 저장
+      onResult({ data, placeUrl: u, industry, mapPlaceInfo: placeInfo });
     } catch (e) {
       setError(e?.message || "진단 실패");
     } finally {
@@ -147,7 +148,7 @@ export default function Home({ onResult }) {
         {mode === "map" && (
           <MapPlaceSelect
             industry={industry}
-            onSelectPlace={(link) => runWithUrl(link)}
+            onSelectPlace={(link, placeInfo) => runWithUrl(link, placeInfo)}
             onDiagnoseStart={() => setLoading(true)}
             loading={loading}
           />

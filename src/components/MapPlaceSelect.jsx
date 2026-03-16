@@ -344,7 +344,11 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
       }));
       return;
     }
-    onSelectPlace(placeUrl);
+    // ✅ 이름/주소 정보도 함께 전달 (기본정보 추출 스킵용)
+    onSelectPlace(placeUrl, {
+      name: item.title,
+      address: item.roadAddress || item.address || ""
+    });
     setSelectedIndex(-1);
   }
 
