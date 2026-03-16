@@ -23,11 +23,11 @@ export async function diagnoseFree(placeUrl, industry = "hairshop") {
   });
 }
 
-export async function diagnosePaid(placeUrl, industry = "hairshop", searchQuery = "") {
+export async function diagnosePaid(placeUrl, industry = "hairshop", searchQuery = "", name = "", address = "") {
   return jsonFetch("/api/engine/diagnose/paid", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ placeUrl, industry, searchQuery }),
+    body: JSON.stringify({ placeUrl, industry, searchQuery, name, address }),
   });
 }
 

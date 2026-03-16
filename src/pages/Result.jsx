@@ -134,7 +134,14 @@ export default function Result({ data, onBack }) {
     setPaidLoading(true);
     setPaidData(null);
     try {
-      const res = await diagnosePaid(placeUrl, industry, searchQuery.trim() || defaultQuery);
+      // ✅ 지도에서 조회한 이름/주소를 함께 전달 (기본정보 추출 스킵 용)
+      const res = await diagnosePaid(
+        placeUrl,
+        industry,
+        searchQuery.trim() || defaultQuery,
+        placeName(data),    // 지도 이름
+        placeAddress(data)  // 지도 주소
+      );
       setPaidData(res);
     } catch (e) {
       setPaidError(e?.message || "유료 진단 실패");
