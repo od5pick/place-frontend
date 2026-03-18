@@ -344,10 +344,24 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
       }));
       return;
     }
-    // ✅ 이름/주소 정보도 함께 전달 (기본정보 추출 스킵용)
+    // ✅ 이름/주소/좌표 정보도 함께 전달
+    console.log("[MapPlaceSelect] 선택된 item:", item);
+    console.log("[MapPlaceSelect] 전달할 placeInfo:", {
+      name: item.title,
+      address: item.roadAddress || item.address || "",
+      x: item.mapx,
+      y: item.mapy,
+      mapx: item.mapx,
+      mapy: item.mapy
+    });
+    
     onSelectPlace(placeUrl, {
       name: item.title,
-      address: item.roadAddress || item.address || ""
+      address: item.roadAddress || item.address || "",
+      x: item.mapx,
+      y: item.mapy,
+      mapx: item.mapx,
+      mapy: item.mapy
     });
     setSelectedIndex(-1);
   }

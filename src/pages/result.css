@@ -54,7 +54,9 @@
 .result-paid-kw-chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:rgba(3,199,90,.12);color:#048b40;font-weight:700;font-size:13px}
 .result-paid-pre{white-space:pre-wrap;word-break:break-word;margin:0;font-size:13px;line-height:1.55;background:#f8fafc;padding:14px;border-radius:10px;border:1px solid #e2e8f0}
 .result-paid-comp-list{margin:0;padding-left:20px}
-.result-paid-comp-list li{margin-bottom:8px;font-size:14px;color:#374151;line-height:1.5}
+.result-paid-comp-list li{margin-bottom:8px;font-size:14px;color:#374151;line-height:1.5;word-break:break-word}
+.result-paid-comp-link{color:#03c75a;text-decoration:none;font-weight:600;word-break:break-all}
+.result-paid-comp-link:hover{text-decoration:underline}
 
 /* 크롤링 로그 (원소스와 동일 스타일) */
 .result-log-section{margin-top:28px;padding:0 0 24px}

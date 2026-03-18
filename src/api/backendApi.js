@@ -23,11 +23,103 @@ export async function diagnoseFree(placeUrl, industry = "hairshop") {
   });
 }
 
-export async function diagnosePaid(placeUrl, industry = "hairshop", searchQuery = "", name = "", address = "") {
+export async function diagnosePaid(placeUrl, industry = "hairshop", searchQuery = "", name = "", address = "", x = null, y = null, diagnosticData = null) {
+  const payload = { 
+    placeUrl, 
+    industry, 
+    searchQuery, 
+    name, 
+    address, 
+    x, 
+    y 
+  };
+  
+  // ✅ 일반진단 데이터가 있으면 함께 전달
+  if (diagnosticData) {
+    console.log("[API] diagnosticData 수신:", diagnosticData);
+    
+    // ✅ 구조: diagnosticData.data.data.placeData
+    const nodeResponse = diagnosticData?.data?.data || {};
+    const placeData = nodeResponse?.placeData || {};
+    const scores = nodeResponse?.scores || {};
+    const totalScore = nodeResponse?.totalScore;
+    const totalGrade = nodeResponse?.totalGrade;
+    
+    console.log("[API] nodeResponse 구조:", Object.keys(nodeResponse));
+    console.log("[API] placeData 구조:", Object.keys(placeData));
+    console.log("[API] scores 구조:", Object.keys(scores));
+    
+    // ✅ placeData에서 정보 추출
+    if (placeData.description) {
+      payload.description = placeData.description;
+      console.log("[API] ✅ description 추출:", placeData.description.substring(0, 50) + "...");
+    } else {
+      console.log("[API] ⚠️  description 없음");
+    }
+    
+    if (placeData.directions) {
+      payload.directions = placeData.directions;
+      console.log("[API] ✅ directions 추출:", placeData.directions.substring(0, 50) + "...");
+    } else {
+      console.log("[API] ⚠️  directions 없음");
+    }
+    
+    if (placeData.keywords && Array.isArray(placeData.keywords)) {
+      payload.keywords = placeData.keywords;
+      console.log("[API] ✅ keywords 추출:", placeData.keywords);
+    } else {
+      console.log("[API] ⚠️  keywords 없음");
+    }
+    
+    if (placeData.reviewCount != null) {
+      payload.reviews = placeData.reviewCount;
+      console.log("[API] ✅ reviews 추출:", placeData.reviewCount);
+    }
+    
+    if (placeData.photoCount != null) {
+      payload.photos = placeData.photoCount;
+      console.log("[API] ✅ photos 추출:", placeData.photoCount);
+    }
+    
+    if (placeData.menuCount != null) {
+      payload.price = placeData.menuCount;
+      console.log("[API] ✅ price/menu 추출:", placeData.menuCount);
+    }
+    
+    // ✅ scores에서 점수 정보 추출
+    if (scores && Object.keys(scores).length > 0) {
+      payload.scores = scores;
+      console.log("[API] ✅ scores 추출:", Object.keys(scores));
+    } else {
+      console.log("[API] ⚠️  scores 없음");
+    }
+    
+    if (totalScore != null) {
+      payload.totalScore = totalScore;
+      console.log("[API] ✅ totalScore 추출:", totalScore);
+    }
+    
+    if (totalGrade) {
+      payload.totalGrade = totalGrade;
+      console.log("[API] ✅ totalGrade 추출:", totalGrade);
+    }
+    
+    console.log("[API] 최종 payload 키:", Object.keys(payload));
+    console.log("[API] 최종 payload 데이터 확인:");
+    console.log("[API]   - description:", payload.description ? "있음" : "없음");
+    console.log("[API]   - directions:", payload.directions ? "있음" : "없음");
+    console.log("[API]   - keywords:", payload.keywords ? payload.keywords.length + "개" : "없음");
+    console.log("[API]   - reviews:", payload.reviews);
+    console.log("[API]   - photos:", payload.photos);
+    console.log("[API]   - totalScore:", payload.totalScore);
+  } else {
+    console.log("[API] diagnosticData 없음");
+  }
+  
   return jsonFetch("/api/engine/diagnose/paid", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ placeUrl, industry, searchQuery, name, address }),
+    body: JSON.stringify(payload),
   });
 }
 

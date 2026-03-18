@@ -136,13 +136,37 @@ export default function Result({ data, onBack }) {
     setPaidLoading(true);
     setPaidData(null);
     try {
-      // ✅ 지도에서 조회한 이름/주소를 함께 전달 (기본정보 추출 스킵 용)
+      // ✅ 지도에서 조회한 이름/주소/좌표를 함께 전달
+      const mapPlaceInfo = data?.mapPlaceInfo || {};
+      const x = mapPlaceInfo.x || mapPlaceInfo.mapx;
+      const y = mapPlaceInfo.y || mapPlaceInfo.mapy;
+      
+      console.log("[Result] ========== 유료진단 시작 ==========");
+      console.log("[Result] data 전체 구조:", Object.keys(data || {}));
+      console.log("[Result] data.data 구조:", Object.keys(data?.data || {}));
+      console.log("[Result] data.data.data 구조:", Object.keys(data?.data?.data || {}));
+      console.log("[Result] mapPlaceInfo:", mapPlaceInfo);
+      console.log("[Result] 유료진단 호출: x=" + x + ", y=" + y);
+      console.log("[Result] placeName:", placeName(data));
+      console.log("[Result] placeAddress:", placeAddress(data));
+      
+      // 데이터 구조 상세 확인
+      const inner = data?.data?.data || data?.data || data || {};
+      console.log("[Result] inner 키:", Object.keys(inner));
+      console.log("[Result] inner.scores:", inner.scores);
+      console.log("[Result] inner.description:", inner.description ? inner.description.substring(0, 50) : "없음");
+      console.log("[Result] inner.directions:", inner.directions ? inner.directions.substring(0, 50) : "없음");
+      console.log("[Result] inner.keywords:", inner.keywords);
+      
       const res = await diagnosePaid(
         placeUrl,
         industry,
         searchQuery.trim() || defaultQuery,
-        placeName(data),    // 지도 이름
-        placeAddress(data)  // 지도 주소
+        placeName(data),     // 지도 이름
+        placeAddress(data),  // 지도 주소
+        x,                   // 경도
+        y,                   // 위도
+        data                 // ✅ 일반진단 전체 데이터 전달
       );
       setPaidData(res);
     } catch (e) {
@@ -261,7 +285,15 @@ export default function Result({ data, onBack }) {
                 <ul className="result-paid-comp-list">
                   {paidData.data.competitorsSimple.slice(0, 5).map((c, i) => (
                     <li key={i}>
-                      <strong>{c?.name || `경쟁사 ${i + 1}`}</strong>
+                      <a 
+                        href={c?.placeUrl || "#"} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="result-paid-comp-link"
+                        title="네이버 플레이스에서 열기"
+                      >
+                        <strong>{c?.name || `경쟁사 ${i + 1}`}</strong>
+                      </a>
                       {Array.isArray(c?.keywords) && c.keywords.length
                         ? ` : ${c.keywords.slice(0, 5).join(", ")}`
                         : " (대표키워드 미노출)"}
