@@ -119,10 +119,9 @@ export default function Result({ data, onBack }) {
   const [paidData, setPaidData] = useState(null);
   const [paidLoading, setPaidLoading] = useState(false);
   const [paidError, setPaidError] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // ✅ 사용자 입력 검색어
   const placeUrl = data?.placeUrl;
   const industry = data?.industry || "hairshop";
-  const defaultQuery = useMemo(() => defaultSearchQuery(industry), [industry]);
-  const [searchQuery, setSearchQuery] = useState(defaultQuery);
 
   const grade = gradeValue(data);
   const logs = getLogs(data);
@@ -132,6 +131,12 @@ export default function Result({ data, onBack }) {
       setPaidError("진단 URL이 없습니다. 무료 진단을 먼저 실행해 주세요.");
       return;
     }
+    
+    if (!searchQuery.trim()) {
+      setPaidError("경쟁사 분석 검색어를 입력해 주세요.");
+      return;
+    }
+    
     setPaidError("");
     setPaidLoading(true);
     setPaidData(null);
@@ -142,31 +147,18 @@ export default function Result({ data, onBack }) {
       const y = mapPlaceInfo.y || mapPlaceInfo.mapy;
       
       console.log("[Result] ========== 유료진단 시작 ==========");
-      console.log("[Result] data 전체 구조:", Object.keys(data || {}));
-      console.log("[Result] data.data 구조:", Object.keys(data?.data || {}));
-      console.log("[Result] data.data.data 구조:", Object.keys(data?.data?.data || {}));
-      console.log("[Result] mapPlaceInfo:", mapPlaceInfo);
-      console.log("[Result] 유료진단 호출: x=" + x + ", y=" + y);
-      console.log("[Result] placeName:", placeName(data));
-      console.log("[Result] placeAddress:", placeAddress(data));
-      
-      // 데이터 구조 상세 확인
-      const inner = data?.data?.data || data?.data || data || {};
-      console.log("[Result] inner 키:", Object.keys(inner));
-      console.log("[Result] inner.scores:", inner.scores);
-      console.log("[Result] inner.description:", inner.description ? inner.description.substring(0, 50) : "없음");
-      console.log("[Result] inner.directions:", inner.directions ? inner.directions.substring(0, 50) : "없음");
-      console.log("[Result] inner.keywords:", inner.keywords);
+      console.log("[Result] 검색어:", searchQuery);
+      console.log("[Result] x=" + x + ", y=" + y);
       
       const res = await diagnosePaid(
         placeUrl,
         industry,
-        searchQuery.trim() || defaultQuery,
-        placeName(data),     // 지도 이름
-        placeAddress(data),  // 지도 주소
-        x,                   // 경도
-        y,                   // 위도
-        data                 // ✅ 일반진단 전체 데이터 전달
+        searchQuery,           // ✅ 사용자 입력 검색어
+        placeName(data),      // 지도 이름
+        placeAddress(data),   // 지도 주소
+        x,                    // 경도
+        y,                    // 위도
+        data                  // ✅ 일반진단 전체 데이터 전달
       );
       setPaidData(res);
     } catch (e) {
@@ -221,27 +213,39 @@ export default function Result({ data, onBack }) {
           </button>
         </div>
 
-        {/* 유료 컨설팅 (원소스와 동일) */}
+        {/* 유료 컨설팅 */}
         {placeUrl && (
           <div className="result-paid-card">
             <div className="result-paid-head">
               <h3 className="result-paid-title">유료 컨설팅</h3>
               <span className="result-paid-price">₩19,900</span>
             </div>
-            <p className="result-paid-desc">경쟁사 Top 5 + 추천키워드 + 개선안을 확인하세요</p>
-            <div className="result-paid-field">
-              <label htmlFor="paid-search-query">경쟁사 분석 검색어</label>
+            <p className="result-paid-desc">경쟁사 분석 검색어를 입력하고 진단을 실행하세요</p>
+            {paidError && <div className="result-paid-error">{paidError}</div>}
+            
+            {/* ✅ 경쟁사 분석 검색어 입력 필드 */}
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", fontSize: "0.95em", fontWeight: "500", marginBottom: "5px" }}>
+                경쟁사 분석 검색어:
+              </label>
               <input
-                id="paid-search-query"
                 type="text"
+                className="result-search-query-input"
+                placeholder="예: 미용실, 종로구 미용실, 신촌 카페"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="예) 서대문역 미용실"
-                className="result-paid-input"
-                disabled={paidLoading}
+                onKeyPress={(e) => e.key === "Enter" && runPaidDiagnosis()}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  fontSize: "0.9em",
+                  boxSizing: "border-box"
+                }}
               />
             </div>
-            {paidError && <div className="result-paid-error">{paidError}</div>}
+            
             <button
               type="button"
               className="result-paid-btn"
