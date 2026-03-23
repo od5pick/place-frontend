@@ -269,6 +269,85 @@ export default function Result({ data, onBack }) {
                     <span key={i} className="result-paid-kw-chip">{kw}</span>
                   ))}
                 </div>
+                
+                {/* ✅ 경쟁사 중복 키워드 분석 */}
+                {(() => {
+                  if (!Array.isArray(paidData.data.competitorsSimple) || paidData.data.competitorsSimple.length === 0) {
+                    return null;
+                  }
+                  
+                  // 모든 경쟁사 키워드 수집
+                  const allCompetitorKeywords = [];
+                  paidData.data.competitorsSimple.forEach(comp => {
+                    if (Array.isArray(comp.keywords)) {
+                      allCompetitorKeywords.push(...comp.keywords);
+                    }
+                  });
+                  
+                  // 키워드 빈도 계산
+                  const keywordCount = {};
+                  allCompetitorKeywords.forEach(kw => {
+                    if (kw && kw !== "대표키워드없음") {
+                      keywordCount[kw] = (keywordCount[kw] || 0) + 1;
+                    }
+                  });
+                  
+                  // 2회 이상 나타나는 키워드 필터링 (중복 키워드)
+                  const duplicateKeywords = Object.entries(keywordCount)
+                    .filter(([keyword, count]) => count >= 2)
+                    .sort(([,a], [,b]) => b - a) // 빈도순 정렬
+                    .slice(0, 5) // 상위 5개
+                    .map(([keyword, count]) => ({ keyword, count }));
+                  
+                  if (duplicateKeywords.length === 0) {
+                    return null;
+                  }
+                  
+                  return (
+                    <div className="result-paid-duplicate-keywords" style={{ marginTop: '15px' }}>
+                      <h4 style={{ 
+                        fontSize: '14px', 
+                        color: '#666', 
+                        marginBottom: '8px',
+                        fontWeight: 'normal'
+                      }}>
+                        📊 경쟁사 공통 키워드 ({duplicateKeywords.length}개)
+                      </h4>
+                      <div className="result-paid-keywords">
+                        {duplicateKeywords.map(({ keyword, count }, i) => (
+                          <span 
+                            key={i} 
+                            className="result-paid-kw-chip" 
+                            style={{ 
+                              backgroundColor: '#e3f2fd', 
+                              color: '#1976d2',
+                              position: 'relative'
+                            }}
+                            title={`${count}개 업체에서 사용 중`}
+                          >
+                            {keyword}
+                            <span style={{ 
+                              fontSize: '10px', 
+                              marginLeft: '4px',
+                              opacity: 0.8,
+                              fontWeight: 'bold'
+                            }}>
+                              ×{count}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                      <p style={{ 
+                        fontSize: '12px', 
+                        color: '#888', 
+                        marginTop: '5px',
+                        marginBottom: 0
+                      }}>
+                        💡 경쟁사들이 자주 사용하는 키워드입니다. 차별화를 위해 참고하세요.
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
             )}
             {paidData.data.improvements?.description && (
