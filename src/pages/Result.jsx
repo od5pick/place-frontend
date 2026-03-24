@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from "react";
 import ScoreCard from "../components/ScoreCard";
-import { diagnosePaid } from "../api/backendApi";
+import { diagnosePaid, API_BASE_URL } from "../api/backendApi";
 import "./result.css";
 
 function defaultSearchQuery(industry) {
@@ -120,6 +120,11 @@ export default function Result({ data, onBack }) {
   const [paidLoading, setPaidLoading] = useState(false);
   const [paidError, setPaidError] = useState("");
   const [searchQuery, setSearchQuery] = useState(""); // ✅ 사용자 입력 검색어
+  const [consultingLoading, setConsultingLoading] = useState({});
+  const [consultingData, setConsultingData] = useState({});
+  /** 유료 리뷰 진단 전용(일반진단 리뷰 점수/데이터와 분리) */
+  const [paidReviewConsultingLoading, setPaidReviewConsultingLoading] = useState(false);
+  const [paidReviewConsultingResult, setPaidReviewConsultingResult] = useState(null);
   const placeUrl = data?.placeUrl;
   const industry = data?.industry || "hairshop";
 
@@ -167,6 +172,90 @@ export default function Result({ data, onBack }) {
       setPaidLoading(false);
     }
   }
+
+  // ✅ 개별 항목 컨설팅 클릭 핸들러
+  const handleConsultingClick = async (key, data) => {
+    if (key === "reviews") {
+      await handlePaidReviewConsultingSamples(data);
+    } else {
+      await handleGeneralConsulting(key, data);
+    }
+  };
+
+  /** 유료 리뷰 진단: 방문자 리뷰 본문 N건 추가 수집 (일반진단 free 크롤과 무관) */
+  const handlePaidReviewConsultingSamples = async (data) => {
+    setPaidReviewConsultingLoading(true);
+    try {
+      console.log("[유료-리뷰진단] 방문자 리뷰 샘플 수집 시작 (일반진단과 별도 API)");
+
+      const response = await fetch(`${API_BASE_URL}/api/engine/paid-consulting/reviews/detailed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          placeUrl: placeUrl || data?.placeUrl,
+          industry: industry || "hairshop",
+          reviewCount: 20,
+        }),
+      });
+
+      console.log("[유료-리뷰진단] 응답 상태:", response.status, response.statusText);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error("[유료-리뷰진단] JSON 파싱 오류:", jsonError);
+        throw new Error(`JSON 파싱 실패: ${responseText.substring(0, 100)}...`);
+      }
+      setPaidReviewConsultingResult(result);
+      console.log("[유료-리뷰진단] 완료:", result);
+    } catch (error) {
+      console.error("[유료-리뷰진단] 오류:", error);
+      const errorMessage =
+        error?.response?.data?.error || error?.message || "유료 리뷰 샘플 수집 중 오류가 발생했습니다.";
+      setPaidReviewConsultingResult({
+        error: errorMessage,
+        purpose: "paid_review_consulting",
+        details: error?.response?.data || error,
+      });
+    } finally {
+      setPaidReviewConsultingLoading(false);
+    }
+  };
+
+  // ✅ 일반 항목 컨설팅
+  const handleGeneralConsulting = async (key, data) => {
+    setConsultingLoading(prev => ({ ...prev, [key]: true }));
+    
+    try {
+      console.log(`[${key} 컨설팅] 시작...`);
+      
+      const response = await fetch(`${API_BASE_URL}/api/engine/consulting/${key}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          placeUrl: placeUrl || data?.placeUrl,
+          industry: industry || "hairshop",
+          currentData: getInner(data)
+        }),
+      });
+
+      const result = await response.json();
+      setConsultingData(prev => ({ ...prev, [key]: result }));
+      console.log(`[${key} 컨설팅] 완료:`, result);
+      
+    } catch (error) {
+      console.error(`${key} 컨설팅 오류:`, error);
+      setConsultingData(prev => ({ ...prev, [key]: { error: `${key} 컨설팅 중 오류가 발생했습니다.` } }));
+    } finally {
+      setConsultingLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
 
   return (
     <div className="result-page">
@@ -254,15 +343,115 @@ export default function Result({ data, onBack }) {
                 </div>
                 
                 <div className="result-score-card-footer">
-                  {/* 개선 상태 메시지만 표시 */}
+                  {/* 개선 상태 메시지 */}
                   <div className={`improvement-status ${getScoreLevel(score)}`}>
                     {getImprovementStatus(score)}
                   </div>
+                  
+                  {/* 액션 버튼 (항목별 테마 색상) */}
+                  <button
+                    className="improvement-action-btn"
+                    onClick={() => handleConsultingClick(key, data)}
+                    disabled={key === "reviews" ? paidReviewConsultingLoading : consultingLoading[key]}
+                  >
+                    <span>{key === "reviews" ? (paidReviewConsultingLoading ? "⏳" : "✓") : consultingLoading[key] ? "⏳" : "✓"}</span>
+                    <span>
+                      {key === "reviews"
+                        ? paidReviewConsultingLoading
+                          ? `${getActionButtonText(key, score).replace("시작", "중...")}`
+                          : getActionButtonText(key, score)
+                        : consultingLoading[key]
+                          ? `${getActionButtonText(key, score).replace("시작", "중...")}`
+                          : getActionButtonText(key, score)}
+                    </span>
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* 개별 컨설팅 결과 (유료 리뷰 샘플은 일반진단 리뷰와 별도 상태) */}
+        {(Object.keys(consultingData).length > 0 || paidReviewConsultingResult) && (
+          <div className="consulting-results-section">
+            <h3 className="consulting-results-title">컨설팅 결과</h3>
+
+            {paidReviewConsultingResult && (
+              <div className="consulting-result-card">
+                <div className="consulting-result-header">
+                  <h4>📝 유료 리뷰 진단 · 방문자 리뷰 샘플</h4>
+                  {paidReviewConsultingResult.meta && (
+                    <span className="consulting-meta">
+                      {paidReviewConsultingResult.meta.reviewCount}건 수집 (
+                      {(paidReviewConsultingResult.meta.totalTime / 1000).toFixed(1)}초) · 일반진단 리뷰 점수와 별도
+                    </span>
+                  )}
+                </div>
+
+                {paidReviewConsultingResult.error || paidReviewConsultingResult.success === false ? (
+                  <div className="consulting-error">
+                    ❌ {paidReviewConsultingResult.error || "유료 리뷰 샘플 수집에 실패했습니다."}
+                  </div>
+                ) : paidReviewConsultingResult.data?.reviews?.length ? (
+                  <div className="consulting-reviews">
+                    <div className="reviews-summary">
+                      <p>
+                        ✅ 유료 진단용으로 최근 방문자 리뷰 {paidReviewConsultingResult.data.reviews.length}건을
+                        수집했습니다. (위 카드 리뷰 점수는 무료 일반진단 데이터입니다.)
+                      </p>
+                    </div>
+
+                    <div className="reviews-list-header">
+                      <h5>📋 수집된 리뷰 목록 ({paidReviewConsultingResult.data.reviews.length}건)</h5>
+                      <span className="scroll-hint">스크롤하여 모든 리뷰를 확인하세요</span>
+                    </div>
+
+                    <div className="reviews-list">
+                      {paidReviewConsultingResult.data.reviews.map((review, idx) => (
+                        <div key={idx} className="review-item">
+                          <div className="review-header">
+                            <span className="review-user">{review.userName}</span>
+                            <span className="review-rating">⭐ {review.rating}</span>
+                            <span className="review-date">{review.date}</span>
+                          </div>
+                          <div className="review-content">
+                            {review.content}
+                          </div>
+                          {review.photoCount > 0 && (
+                            <div className="review-photos">📷 사진 {review.photoCount}개</div>
+                          )}
+                          {review.aiRecommendedReply && (
+                            <div className="ai-recommended-reply">
+                              <div className="ai-reply-header">🤖 AI 추천 댓글:</div>
+                              <div className="ai-reply-content">{review.aiRecommendedReply}</div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="consulting-empty">유료 리뷰 샘플이 없습니다.</div>
+                )}
+              </div>
+            )}
+
+            {Object.keys(consultingData).map((key) => (
+              <div key={key} className="consulting-result-card">
+                <div className="consulting-result-header">
+                  <h4>🔧 {KEY_TO_KOREAN[key] || key} 컨설팅 결과</h4>
+                </div>
+                <div className="consulting-content">
+                  {consultingData[key].error ? (
+                    <div className="consulting-error">❌ {consultingData[key].error}</div>
+                  ) : (
+                    <pre>{JSON.stringify(consultingData[key], null, 2)}</pre>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* 유료 컨설팅 */}
         {placeUrl && (
@@ -574,8 +763,8 @@ function getCardDetails(key, score, positives, negatives, data) {
     console.log(`[description] inner.descriptionData:`, inner?.descriptionData);
   }
   
-  if (key === 'reviews') {
-    // 실제 리뷰 데이터를 다양한 경로에서 탐색
+  if (key === "reviews") {
+    // 일반진단(무료) 응답만 사용 — 유료 방문자리뷰 본문은 paidReviewConsultingResult 로 별도 수집
     const reviews = inner?.reviews || {};
     const reviewData = inner?.reviewData || inner?.reviewInfo || reviews;
     const reviewCount = reviewData?.count || reviews?.count || inner?.reviewCount || 
@@ -843,15 +1032,15 @@ function shouldShowActionButton(key, score) {
   return false; // 개선 필요한 경우 버튼 없음
 }
 
-// ✅ 액션 버튼 텍스트
+// ✅ 액션 버튼 텍스트 (항목별 컨설팅)
 function getActionButtonText(key, score) {
-  if (score >= 80) {
-    return '자동 수정 성공';
-  }
-  if (score >= 60) {
-    if (key === 'keywords') return '추천 키워드 적용하기';
-    if (key === 'description') return '추천 키워드 적용하기';
-    return '추천 키워드 적용하기';
-  }
-  return '개선 필요';
+  const buttonTexts = {
+    'reviews': '유료 리뷰 컨설팅 시작',
+    'keywords': '대표키워드 컨설팅 시작', 
+    'description': '상세설명 컨설팅 시작',
+    'directions': '오시는길 컨설팅 시작',
+    'price': '가격/메뉴 컨설팅 시작'
+  };
+  
+  return buttonTexts[key] || '컨설팅 시작';
 }

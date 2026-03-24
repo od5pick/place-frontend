@@ -166,7 +166,7 @@
   border-radius: 16px;
   border: 1px solid #e9ecef;
   padding: 20px;
-  min-height: 340px;
+  min-height: 380px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
@@ -333,8 +333,6 @@
 
 .result-score-card-footer {
   margin-top: auto;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 12px;
 }
 
 .improvement-status {
@@ -356,21 +354,72 @@
   color: #dc3545;
 }
 
-/* 액션 버튼 스타일 제거됨 */
-
-.improvement-status.good {
-  color: #28a745;
+.improvement-action-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  margin-top: 8px;
 }
 
-.improvement-status.warning {
-  color: #f57c00;
+.improvement-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.improvement-status.danger {
-  color: #dc3545;
+/* 각 항목별 테마 색상 버튼 */
+.result-score-card.review .improvement-action-btn {
+  background: #dc3545;
+  color: white;
 }
 
-/* 버튼 스타일 제거됨 */
+.result-score-card.review .improvement-action-btn:hover {
+  background: #c82333;
+}
+
+.result-score-card.keyword .improvement-action-btn {
+  background: #ffc107;
+  color: #333;
+}
+
+.result-score-card.keyword .improvement-action-btn:hover {
+  background: #e0a800;
+}
+
+.result-score-card.description .improvement-action-btn {
+  background: #28a745;
+  color: white;
+}
+
+.result-score-card.description .improvement-action-btn:hover {
+  background: #218838;
+}
+
+.result-score-card.directions .improvement-action-btn {
+  background: #198754;
+  color: white;
+}
+
+.result-score-card.directions .improvement-action-btn:hover {
+  background: #157347;
+}
+
+.result-score-card.price .improvement-action-btn {
+  background: #2196f3;
+  color: white;
+}
+
+.result-score-card.price .improvement-action-btn:hover {
+  background: #1976d2;
+}
 
 @media (max-width:760px){
   .result-total{font-size:50px}
@@ -388,4 +437,246 @@
 
 @media (max-width:1000px) and (min-width:761px){
   .result-score-grid{grid-template-columns:repeat(2, 1fr)}
+}
+
+/* 개별 컨설팅 결과 섹션 */
+.consulting-results-section {
+  margin-top: 32px;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.consulting-results-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.consulting-result-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3498db;
+}
+
+.consulting-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.consulting-result-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.consulting-meta {
+  font-size: 12px;
+  color: #7f8c8d;
+  background: #ecf0f1;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.consulting-error {
+  color: #e74c3c;
+  background: #fdf2f2;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #e74c3c;
+}
+
+.consulting-empty {
+  color: #7f8c8d;
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* 리뷰 컨설팅 결과 */
+.consulting-reviews {
+  margin-top: 12px;
+}
+
+.reviews-summary {
+  background: #e8f5e8;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border-left: 4px solid #27ae60;
+}
+
+.reviews-summary p {
+  margin: 0;
+  color: #27ae60;
+  font-weight: 500;
+}
+
+.reviews-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 8px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.reviews-list-header h5 {
+  margin: 0;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.scroll-hint {
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafbfc;
+}
+
+.reviews-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.reviews-list::-webkit-scrollbar-track {
+  background: #f1f3f4;
+  border-radius: 3px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb {
+  background: #c1c8cd;
+  border-radius: 3px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb:hover {
+  background: #a8b3ba;
+}
+
+.review-item {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.review-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.review-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.review-user {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.review-rating {
+  color: #f39c12;
+  font-weight: 500;
+}
+
+.review-date {
+  color: #7f8c8d;
+  margin-left: auto;
+}
+
+.review-content {
+  color: #2c3e50;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  font-size: 14px;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.review-photos {
+  font-size: 12px;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+/* AI 추천 댓글 스타일 */
+.ai-recommended-reply {
+  margin-top: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f4ff 100%);
+  border: 1px solid #d1ecf1;
+  border-radius: 8px;
+  border-left: 4px solid #17a2b8;
+}
+
+.ai-reply-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0c5460;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-reply-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #155724;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(23, 162, 184, 0.2);
+}
+
+.reviews-more {
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 12px;
+  background: #f1f2f6;
+  border-radius: 6px;
+}
+
+.consulting-content {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+.consulting-content pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
