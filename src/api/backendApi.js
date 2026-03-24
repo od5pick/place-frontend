@@ -2,7 +2,8 @@
 const DEFAULT_LOCAL_API_BASE_URL = "http://localhost:8080";
 const DEFAULT_PROD_API_BASE_URL = "https://place-backend-ismy.onrender.com";
 
-const API_BASE_URL =
+/** Spring 백엔드 베이스 URL (Vite 프록시 없음 → 반드시 전체 URL 사용) */
+export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.PROD ? DEFAULT_PROD_API_BASE_URL : DEFAULT_LOCAL_API_BASE_URL);
 
