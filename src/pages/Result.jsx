@@ -127,6 +127,11 @@ export default function Result({ data, onBack }) {
   const [paidReviewConsultingResult, setPaidReviewConsultingResult] = useState(null);
   const placeUrl = data?.placeUrl;
   const industry = data?.industry || "hairshop";
+  
+  // 매장명과 키워드 정보 추출 (API 전달용)
+  const inner = getInner(data);
+  const placeNameForApi = placeName(data) || inner?.placeName || inner?.name || "";
+  const keywordsForApi = inner?.keywords || "";
 
   const grade = gradeValue(data);
   const logs = getLogs(data);
@@ -194,6 +199,8 @@ export default function Result({ data, onBack }) {
         body: JSON.stringify({
           placeUrl: placeUrl || data?.placeUrl,
           industry: industry || "hairshop",
+          placeName: placeNameForApi,
+          keywords: keywordsForApi,
           reviewCount: 20,
         }),
       });
