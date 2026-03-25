@@ -1,0 +1,81 @@
+.diagnosis-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.32);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.diagnosis-loading-modal {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.22);
+  padding: 32px 28px 26px;
+  text-align: center;
+  box-sizing: border-box;
+}
+.diagnosis-loading-spinner-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.diagnosis-loading-spinner {
+  width: 48px;
+  height: 48px;
+  display: block;
+  animation: diagnosis-loading-spin 0.85s linear infinite;
+  transform-origin: center;
+}
+@keyframes diagnosis-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.diagnosis-loading-title {
+  margin: 20px 0 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.35;
+}
+.diagnosis-loading-sub {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b7280;
+  line-height: 1.5;
+}
+.diagnosis-loading-rule {
+  height: 1px;
+  background: #f3f4f6;
+  margin: 20px 0 16px;
+  border: 0;
+}
+.diagnosis-loading-bar-track {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.diagnosis-loading-bar-fill {
+  height: 100%;
+  background: #03c75a;
+  border-radius: 999px;
+  transition: width 0.4s ease-out;
+  min-width: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagnosis-loading-spinner {
+    animation: none;
+  }
+  .diagnosis-loading-bar-fill {
+    transition: none;
+  }
+}

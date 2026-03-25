@@ -321,7 +321,6 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
   }
 
   async function handleDiagnose(item) {
-    onDiagnoseStart?.();
     console.log("[진단 클릭] 업체:", item?.title, "placeId:", item?.placeId, "link:", item?.link);
     let placeUrl = item.placeId
       ? getCrawlPlaceUrl(item.placeId, industry)
@@ -344,6 +343,7 @@ export default function MapPlaceSelect({ industry, onSelectPlace, onDiagnoseStar
       }));
       return;
     }
+    onDiagnoseStart?.();
     // ✅ 이름/주소/좌표 정보도 함께 전달
     console.log("[MapPlaceSelect] 선택된 item:", item);
     console.log("[MapPlaceSelect] 전달할 placeInfo:", {

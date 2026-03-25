@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from "react";
 import ScoreCard from "../components/ScoreCard";
+import DiagnosisLoadingModal from "../components/DiagnosisLoadingModal";
 import { diagnosePaid, API_BASE_URL } from "../api/backendApi";
 import "./result.css";
 
@@ -93,7 +94,7 @@ function sectionExplain(data, key, index) {
   return {};
 }
 
-function placeName(data) {
+function getPlaceDisplayName(data) {
   const inner = getInner(data);
   // ✅ 지도에서 전달받은 이름 우선, 없으면 무료 진단 결과에서
   return data?.mapPlaceInfo?.name || inner.placeData?.name || "";
@@ -103,6 +104,86 @@ function placeAddress(data) {
   const inner = getInner(data);
   // ✅ 지도에서 전달받은 주소 우선, 없으면 무료 진단 결과에서
   return data?.mapPlaceInfo?.address || inner.placeData?.address || "";
+}
+
+/** 항목별 유료 컨설팅 API 응답 → 전체 유료진단 `data`와 동일한 필드로 해석 */
+function normalizeItemConsultingEntry(entry) {
+  if (!entry || entry.error || entry.success === false) return null;
+  const inner = entry.data;
+  if (!inner || typeof inner !== "object") return null;
+  const imp = inner.improvements;
+  const out = {
+    keywords: [],
+    description: "",
+    directions: "",
+    priceText: "",
+  };
+  if (Array.isArray(inner.recommendedKeywords) && inner.recommendedKeywords.length) {
+    out.keywords = inner.recommendedKeywords.filter((k) => typeof k === "string");
+  }
+  if (imp && typeof imp === "object" && !Array.isArray(imp)) {
+    if (Array.isArray(imp.keywords)) {
+      out.keywords = imp.keywords.filter((k) => typeof k === "string");
+    }
+    if (typeof imp.description === "string") out.description = imp.description;
+    if (typeof imp.directions === "string") out.directions = imp.directions;
+    if (typeof imp.price === "string") out.priceText = imp.price;
+  }
+  return out;
+}
+
+/** 유료 리뷰 진단 결과 UI (전체 유료 결과 상단 또는 항목별 영역에서 재사용) */
+function PaidReviewConsultingResultBlock({ result }) {
+  if (!result) return null;
+  return (
+    <div className="result-paid-block">
+      <h3 className="result-paid-block-title">🔥 유료 리뷰 진단 · 방문자 리뷰 샘플</h3>
+      {result.meta && (
+        <p className="result-paid-block-desc">
+          {result.meta.reviewCount}건 수집 ({(result.meta.totalTime / 1000).toFixed(1)}초) · 일반진단 리뷰 점수와 별도
+        </p>
+      )}
+
+      {result.error || result.success === false ? (
+        <div className="result-paid-error">
+          ❌ {result.error || "유료 리뷰 샘플 수집에 실패했습니다."}
+        </div>
+      ) : result.data?.reviews?.length ? (
+        <>
+          <p className="result-paid-block-desc">
+            ✅ 유료 진단용으로 최근 방문자 리뷰 {result.data.reviews.length}건을 수집했습니다. (위 카드 리뷰 점수는
+            무료 일반진단 데이터입니다.)
+          </p>
+          <p className="result-paid-block-desc" style={{ marginTop: 0 }}>
+            📋 수집된 리뷰 목록 ({result.data.reviews.length}건) · 스크롤하여 확인
+          </p>
+          <div className="reviews-list">
+            {result.data.reviews.map((review, idx) => (
+              <div key={idx} className="review-item">
+                <div className="review-header">
+                  <span className="review-user">{review.userName}</span>
+                  <span className="review-rating">⭐ {review.rating}</span>
+                  <span className="review-date">{review.date}</span>
+                </div>
+                <div className="review-content">{review.content}</div>
+                {review.photoCount > 0 && (
+                  <div className="review-photos">📷 사진 {review.photoCount}개</div>
+                )}
+                {review.aiRecommendedReply && (
+                  <div className="ai-recommended-reply">
+                    <div className="ai-reply-header">🤖 AI 추천 댓글:</div>
+                    <div className="ai-reply-content">{review.aiRecommendedReply}</div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="result-paid-block-desc">유료 리뷰 샘플이 없습니다.</p>
+      )}
+    </div>
+  );
 }
 
 // 두 번째 이미지 순서와 동일하게 배치
@@ -130,12 +211,41 @@ export default function Result({ data, onBack }) {
   
   // 매장명과 키워드 정보 추출 (API 전달용)
   const inner = getInner(data);
-  const placeNameForApi = placeName(data) || inner?.placeName || inner?.name || "";
+  const placeNameForApi = getPlaceDisplayName(data) || inner?.placeName || inner?.name || "";
   const keywordsForApi = inner?.keywords || "";
 
   const grade = gradeValue(data);
   const logs = getLogs(data);
 
+  /**
+   * 유료 리뷰 진단 API 호출 (본문 수집 + AI 댓글). 전체 유료진단·리뷰 버튼 공통.
+   */
+  async function fetchPaidReviewConsultingBody(dataArg) {
+    const url = placeUrl || dataArg?.placeUrl;
+    const response = await fetch(`${API_BASE_URL}/api/engine/paid-consulting/reviews/detailed`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        placeUrl: url,
+        industry: industry || "hairshop",
+        placeName: placeNameForApi,
+        keywords: keywordsForApi,
+        reviewCount: 20,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    const responseText = await response.text();
+    try {
+      return JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error("[유료-리뷰진단] JSON 파싱 오류:", jsonError);
+      throw new Error(`JSON 파싱 실패: ${responseText.substring(0, 100)}...`);
+    }
+  }
+
+  /** 전체 유료진단: GPT·경쟁사 + 유료 리뷰 진단(크롤 + AI 댓글) 함께 실행 */
   async function runPaidDiagnosis() {
     if (!placeUrl) {
       setPaidError("진단 URL이 없습니다. 무료 진단을 먼저 실행해 주세요.");
@@ -149,32 +259,47 @@ export default function Result({ data, onBack }) {
     
     setPaidError("");
     setPaidLoading(true);
+    setPaidReviewConsultingLoading(true);
     setPaidData(null);
+    setPaidReviewConsultingResult(null);
     try {
-      // ✅ 지도에서 조회한 이름/주소/좌표를 함께 전달
       const mapPlaceInfo = data?.mapPlaceInfo || {};
       const x = mapPlaceInfo.x || mapPlaceInfo.mapx;
       const y = mapPlaceInfo.y || mapPlaceInfo.mapy;
       
-      console.log("[Result] ========== 유료진단 시작 ==========");
+      console.log("[Result] ========== 전체 유료진단 시작 (GPT + 리뷰) ==========");
       console.log("[Result] 검색어:", searchQuery);
       console.log("[Result] x=" + x + ", y=" + y);
       
       const res = await diagnosePaid(
         placeUrl,
         industry,
-        searchQuery,           // ✅ 사용자 입력 검색어
-        placeName(data),      // 지도 이름
-        placeAddress(data),   // 지도 주소
-        x,                    // 경도
-        y,                    // 위도
-        data                  // ✅ 일반진단 전체 데이터 전달
+        searchQuery,
+        getPlaceDisplayName(data),
+        placeAddress(data),
+        x,
+        y,
+        data
       );
       setPaidData(res);
+
+      try {
+        console.log("[Result] 유료 리뷰 진단 연동 실행");
+        const reviewResult = await fetchPaidReviewConsultingBody(data);
+        setPaidReviewConsultingResult(reviewResult);
+        console.log("[Result] 유료 리뷰 진단 완료:", reviewResult);
+      } catch (revErr) {
+        console.error("[Result] 유료 리뷰 진단 실패 (전체 진단은 유지):", revErr);
+        setPaidReviewConsultingResult({
+          error: revErr?.message || "유료 리뷰 진단 중 오류가 발생했습니다.",
+          purpose: "paid_review_consulting",
+        });
+      }
     } catch (e) {
       setPaidError(e?.message || "유료 진단 실패");
     } finally {
       setPaidLoading(false);
+      setPaidReviewConsultingLoading(false);
     }
   }
 
@@ -187,38 +312,12 @@ export default function Result({ data, onBack }) {
     }
   };
 
-  /** 유료 리뷰 진단: 방문자 리뷰 본문 N건 추가 수집 (일반진단 free 크롤과 무관) */
-  const handlePaidReviewConsultingSamples = async (data) => {
+  /** 유료 리뷰 진단만 단독 실행 (카드 버튼) */
+  const handlePaidReviewConsultingSamples = async (dataArg) => {
     setPaidReviewConsultingLoading(true);
     try {
       console.log("[유료-리뷰진단] 방문자 리뷰 샘플 수집 시작 (일반진단과 별도 API)");
-
-      const response = await fetch(`${API_BASE_URL}/api/engine/paid-consulting/reviews/detailed`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          placeUrl: placeUrl || data?.placeUrl,
-          industry: industry || "hairshop",
-          placeName: placeNameForApi,
-          keywords: keywordsForApi,
-          reviewCount: 20,
-        }),
-      });
-
-      console.log("[유료-리뷰진단] 응답 상태:", response.status, response.statusText);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const responseText = await response.text();
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (jsonError) {
-        console.error("[유료-리뷰진단] JSON 파싱 오류:", jsonError);
-        throw new Error(`JSON 파싱 실패: ${responseText.substring(0, 100)}...`);
-      }
+      const result = await fetchPaidReviewConsultingBody(dataArg);
       setPaidReviewConsultingResult(result);
       console.log("[유료-리뷰진단] 완료:", result);
     } catch (error) {
@@ -235,26 +334,38 @@ export default function Result({ data, onBack }) {
     }
   };
 
-  // ✅ 일반 항목 컨설팅
+  // ✅ 항목별 유료 컨설팅 (버튼 1회 = Spring GPT 1회, 전체 유료진단 diagnosePaid와 별도)
   const handleGeneralConsulting = async (key, data) => {
     setConsultingLoading(prev => ({ ...prev, [key]: true }));
     
     try {
-      console.log(`[${key} 컨설팅] 시작...`);
-      
-      const response = await fetch(`${API_BASE_URL}/api/engine/consulting/${key}`, {
+      console.log(`[${key} 항목별 컨설팅] 시작 (paid-consulting/item)...`);
+      const mapPlaceInfo = data?.mapPlaceInfo || {};
+      const x = mapPlaceInfo.x ?? mapPlaceInfo.mapx ?? null;
+      const y = mapPlaceInfo.y ?? mapPlaceInfo.mapy ?? null;
+
+      const response = await fetch(`${API_BASE_URL}/api/engine/paid-consulting/item`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          item: key,
           placeUrl: placeUrl || data?.placeUrl,
           industry: industry || "hairshop",
-          currentData: getInner(data)
+          searchQuery: searchQuery.trim() || "",
+          x,
+          y,
+          placeName: placeNameForApi || getPlaceDisplayName(data),
+          placeAddress: placeAddress(data) || "",
+          currentData: getInner(data),
         }),
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || `HTTP ${response.status}`);
+      }
       setConsultingData(prev => ({ ...prev, [key]: result }));
-      console.log(`[${key} 컨설팅] 완료:`, result);
+      console.log(`[${key} 항목별 컨설팅] 완료:`, result);
       
     } catch (error) {
       console.error(`${key} 컨설팅 오류:`, error);
@@ -267,9 +378,9 @@ export default function Result({ data, onBack }) {
   return (
     <div className="result-page">
       <div className="result-wrap">
-        {placeName(data) && (
+        {getPlaceDisplayName(data) && (
           <div className="result-place-info">
-            <div className="result-place-name">{placeName(data)}</div>
+            <div className="result-place-name">{getPlaceDisplayName(data)}</div>
             {placeAddress(data) && (
               <div className="result-place-address">{placeAddress(data)}</div>
             )}
@@ -361,7 +472,7 @@ export default function Result({ data, onBack }) {
                     onClick={() => handleConsultingClick(key, data)}
                     disabled={key === "reviews" ? paidReviewConsultingLoading : consultingLoading[key]}
                   >
-                    <span>{key === "reviews" ? (paidReviewConsultingLoading ? "⏳" : "✓") : consultingLoading[key] ? "⏳" : "✓"}</span>
+                    <span>{key === "reviews" ? (paidReviewConsultingLoading ? "⏳" : "▶") : consultingLoading[key] ? "⏳" : "▶"}</span>
                     <span>
                       {key === "reviews"
                         ? paidReviewConsultingLoading
@@ -378,135 +489,156 @@ export default function Result({ data, onBack }) {
           })}
         </div>
 
-        {/* 개별 컨설팅 결과 (유료 리뷰 샘플은 일반진단 리뷰와 별도 상태) */}
-        {(Object.keys(consultingData).length > 0 || paidReviewConsultingResult) && (
-          <div className="consulting-results-section">
-            <h3 className="consulting-results-title">컨설팅 결과</h3>
+        {/* 항목별 컨설팅 + (전체 유료 결과 없을 때만) 유료 리뷰 결과 */}
+        {(() => {
+          const paidFullOk = paidData?.success && paidData?.data;
+          const showReviewWithItems = paidReviewConsultingResult && !paidFullOk;
+          const hasItemConsulting = Object.keys(consultingData).length > 0;
+          if (!showReviewWithItems && !hasItemConsulting) return null;
+          return (
+            <div className="result-paid-result">
+              {showReviewWithItems && (
+                <PaidReviewConsultingResultBlock result={paidReviewConsultingResult} />
+              )}
 
-            {paidReviewConsultingResult && (
-              <div className="consulting-result-card">
-                <div className="consulting-result-header">
-                  <h4>📝 유료 리뷰 진단 · 방문자 리뷰 샘플</h4>
-                  {paidReviewConsultingResult.meta && (
-                    <span className="consulting-meta">
-                      {paidReviewConsultingResult.meta.reviewCount}건 수집 (
-                      {(paidReviewConsultingResult.meta.totalTime / 1000).toFixed(1)}초) · 일반진단 리뷰 점수와 별도
-                    </span>
-                  )}
-                </div>
-
-                {paidReviewConsultingResult.error || paidReviewConsultingResult.success === false ? (
-                  <div className="consulting-error">
-                    ❌ {paidReviewConsultingResult.error || "유료 리뷰 샘플 수집에 실패했습니다."}
+            {Object.keys(consultingData).map((key) => {
+              const entry = consultingData[key];
+              if (entry?.error) {
+                return (
+                  <div key={key} className="result-paid-block">
+                    <h3 className="result-paid-block-title">{KEY_TO_KOREAN[key] || key}</h3>
+                    <div className="result-paid-error">❌ {entry.error}</div>
                   </div>
-                ) : paidReviewConsultingResult.data?.reviews?.length ? (
-                  <div className="consulting-reviews">
-                    <div className="reviews-summary">
-                      <p>
-                        ✅ 유료 진단용으로 최근 방문자 리뷰 {paidReviewConsultingResult.data.reviews.length}건을
-                        수집했습니다. (위 카드 리뷰 점수는 무료 일반진단 데이터입니다.)
-                      </p>
-                    </div>
-
-                    <div className="reviews-list-header">
-                      <h5>📋 수집된 리뷰 목록 ({paidReviewConsultingResult.data.reviews.length}건)</h5>
-                      <span className="scroll-hint">스크롤하여 모든 리뷰를 확인하세요</span>
-                    </div>
-
-                    <div className="reviews-list">
-                      {paidReviewConsultingResult.data.reviews.map((review, idx) => (
-                        <div key={idx} className="review-item">
-                          <div className="review-header">
-                            <span className="review-user">{review.userName}</span>
-                            <span className="review-rating">⭐ {review.rating}</span>
-                            <span className="review-date">{review.date}</span>
-                          </div>
-                          <div className="review-content">
-                            {review.content}
-                          </div>
-                          {review.photoCount > 0 && (
-                            <div className="review-photos">📷 사진 {review.photoCount}개</div>
-                          )}
-                          {review.aiRecommendedReply && (
-                            <div className="ai-recommended-reply">
-                              <div className="ai-reply-header">🤖 AI 추천 댓글:</div>
-                              <div className="ai-reply-content">{review.aiRecommendedReply}</div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                );
+              }
+              const norm = normalizeItemConsultingEntry(entry);
+              if (!norm) {
+                return (
+                  <div key={key} className="result-paid-block">
+                    <h3 className="result-paid-block-title">{KEY_TO_KOREAN[key] || key}</h3>
+                    <pre className="result-paid-pre">{JSON.stringify(entry, null, 2)}</pre>
                   </div>
-                ) : (
-                  <div className="consulting-empty">유료 리뷰 샘플이 없습니다.</div>
-                )}
-              </div>
-            )}
-
-            {Object.keys(consultingData).map((key) => (
-              <div key={key} className="consulting-result-card">
-                <div className="consulting-result-header">
-                  <h4>🔧 {KEY_TO_KOREAN[key] || key} 컨설팅 결과</h4>
+                );
+              }
+              if (key === "keywords") {
+                return (
+                  <div key={key} className="result-paid-block">
+                    <h3 className="result-paid-block-title">✅ 추천 대표키워드 (5개)</h3>
+                    <p className="result-paid-block-desc">아래 키워드를 플레이스 대표키워드에 넣으세요</p>
+                    {norm.keywords.length > 0 ? (
+                      <div className="result-paid-keywords">
+                        {norm.keywords.slice(0, 5).map((kw, i) => (
+                          <span key={i} className="result-paid-kw-chip">
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <pre className="result-paid-pre">추천 키워드를 가져오지 못했습니다.</pre>
+                    )}
+                  </div>
+                );
+              }
+              if (key === "description" && norm.description) {
+                return (
+                  <div key={key} className="result-paid-block">
+                    <h3 className="result-paid-block-title">상세설명 개선안</h3>
+                    <pre className="result-paid-pre">{norm.description}</pre>
+                  </div>
+                );
+              }
+              if (key === "directions" && norm.directions) {
+                return (
+                  <div key={key} className="result-paid-block">
+                    <h3 className="result-paid-block-title">오시는길 개선안</h3>
+                    <pre className="result-paid-pre">{norm.directions}</pre>
+                  </div>
+                );
+              }
+              if (key === "price" && norm.priceText) {
+                return (
+                  <div key={key} className="result-paid-block">
+                    <h3 className="result-paid-block-title">가격/메뉴 개선 제안</h3>
+                    <pre className="result-paid-pre">{norm.priceText}</pre>
+                  </div>
+                );
+              }
+              return (
+                <div key={key} className="result-paid-block">
+                  <h3 className="result-paid-block-title">{KEY_TO_KOREAN[key] || key}</h3>
+                  <pre className="result-paid-pre">{JSON.stringify(entry, null, 2)}</pre>
                 </div>
-                <div className="consulting-content">
-                  {consultingData[key].error ? (
-                    <div className="consulting-error">❌ {consultingData[key].error}</div>
-                  ) : (
-                    <pre>{JSON.stringify(consultingData[key], null, 2)}</pre>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        )}
+          );
+        })()}
 
-        {/* 유료 컨설팅 */}
+        {/* 전체 유료진단 — 전체 자동 개선 카드 */}
         {placeUrl && (
-          <div className="result-paid-card">
-            <div className="result-paid-head">
-              <h3 className="result-paid-title">유료 컨설팅</h3>
-              <span className="result-paid-price">₩19,900</span>
+          <div className="result-paid-premium">
+            <div className="result-paid-premium-top">
+              <div className="result-paid-premium-main">
+                <div className="result-paid-premium-title-row">
+                  <h3 className="result-paid-premium-title">전체 유료 진단</h3>
+                  <span className="result-paid-premium-price"></span>
+                </div>
+                <p className="result-paid-premium-sub">
+                  각 항목의 추천 개선안을 한 번에 적용합니다
+                </p>
+                <ul className="result-paid-premium-features">
+                  <li>추천 개선안 자동 반영</li>
+                  <li>항목별 우선순위 기반 적용</li>
+                </ul>
+              </div>
+              <button
+                type="button"
+                className="result-paid-premium-cta"
+                onClick={runPaidDiagnosis}
+                disabled={paidLoading}
+              >
+                <span className="result-paid-premium-cta-icon" aria-hidden>
+                  💰
+                </span>
+                <span className="result-paid-premium-cta-text">
+                  {paidLoading ? "전체 진단 중(리뷰·GPT)..." : "전체 유료 진단 실행하기"}
+                </span>
+                <span className="result-paid-premium-cta-arrow" aria-hidden>
+                  ›
+                </span>
+              </button>
             </div>
-            <p className="result-paid-desc">경쟁사 분석 검색어를 입력하고 진단을 실행하세요</p>
-            {paidError && <div className="result-paid-error">{paidError}</div>}
-            
-            {/* ✅ 경쟁사 분석 검색어 입력 필드 */}
-            <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", fontSize: "0.95em", fontWeight: "500", marginBottom: "5px" }}>
-                경쟁사 분석 검색어:
+
+            <hr className="result-paid-premium-divider" />
+
+            <div className="result-paid-premium-bottom">
+              {paidError && <div className="result-paid-error">{paidError}</div>}
+              <label className="result-paid-premium-label" htmlFor="paid-competitor-search-query">
+                경쟁사 분석 검색어
               </label>
               <input
+                id="paid-competitor-search-query"
                 type="text"
-                className="result-search-query-input"
-                placeholder="예: 미용실, 종로구 미용실, 신촌 카페"
+                className="result-paid-premium-input"
+                placeholder="예: 미용실 종로구, 신촌 카페, 강남역 필라테스"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && runPaidDiagnosis()}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  fontSize: "0.9em",
-                  boxSizing: "border-box"
-                }}
+                onKeyDown={(e) => e.key === "Enter" && runPaidDiagnosis()}
+                autoComplete="off"
               />
+              <p className="result-paid-premium-hint">
+                예. 미용실 종로구, 신촌 카페처럼 지역 + 업종은 함께 입력해요
+              </p>
             </div>
-            
-            <button
-              type="button"
-              className="result-paid-btn"
-              onClick={runPaidDiagnosis}
-              disabled={paidLoading}
-            >
-              {paidLoading ? "진단 중..." : "유료 진단 실행"}
-            </button>
           </div>
         )}
 
-        {/* 유료 진단 결과: 추천 키워드 / 개선안 / 경쟁사 */}
+        {/* 유료 진단 결과: 리뷰 샘플 → 추천 키워드 / 개선안 / 경쟁사 */}
         {paidData?.success && paidData?.data && (
           <div className="result-paid-result">
+            {paidReviewConsultingResult && (
+              <PaidReviewConsultingResultBlock result={paidReviewConsultingResult} />
+            )}
             {Array.isArray(paidData.data.recommendedKeywords) && paidData.data.recommendedKeywords.length > 0 && (
               <div className="result-paid-block">
                 <h3 className="result-paid-block-title">✅ 추천 대표키워드 (5개)</h3>
@@ -609,6 +741,15 @@ export default function Result({ data, onBack }) {
                 <pre className="result-paid-pre">{paidData.data.improvements.directions}</pre>
               </div>
             )}
+            {paidData.data.improvements?.price != null &&
+              String(paidData.data.improvements.price).trim() !== "" && (
+                <div className="result-paid-block">
+                  <h3 className="result-paid-block-title">가격/메뉴 개선 제안</h3>
+                  <pre className="result-paid-pre">
+                    {String(paidData.data.improvements.price)}
+                  </pre>
+                </div>
+              )}
             {Array.isArray(paidData.data.competitorsSimple) && paidData.data.competitorsSimple.length > 0 && (
               <div className="result-paid-block">
                 <h3 className="result-paid-block-title">🏁 경쟁업체 TOP5</h3>
@@ -660,6 +801,13 @@ export default function Result({ data, onBack }) {
           )}
         </div>
       </div>
+
+      <DiagnosisLoadingModal
+        open={paidLoading}
+        title="자동 개선안을 적용 중..."
+        subtitle="페이지를 이탈하지 말고 잠시만 기다려주세요"
+        ariaTitleId="result-paid-loading-title"
+      />
     </div>
   );
 }
@@ -1042,11 +1190,11 @@ function shouldShowActionButton(key, score) {
 // ✅ 액션 버튼 텍스트 (항목별 컨설팅)
 function getActionButtonText(key, score) {
   const buttonTexts = {
-    'reviews': '유료 리뷰 컨설팅 시작',
-    'keywords': '대표키워드 컨설팅 시작', 
-    'description': '상세설명 컨설팅 시작',
-    'directions': '오시는길 컨설팅 시작',
-    'price': '가격/메뉴 컨설팅 시작'
+    'reviews': '유료 리뷰 컨설팅',
+    'keywords': '유료 대표키워드 컨설팅', 
+    'description': '유료 상세설명 컨설팅',
+    'directions': '유료 오시는길 컨설팅',
+    'price': '유료 가격/메뉴 컨설팅'
   };
   
   return buttonTexts[key] || '컨설팅 시작';

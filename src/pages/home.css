@@ -173,60 +173,6 @@
   background: #02b350;
 }
 
-/* Spinner */
-.home-spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2.5px solid rgba(255,255,255,.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-
-/* Full-page loading overlay when diagnosing */
-.home-loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.home-loading-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 999px;
-  background: #111827;
-  color: #f9fafb;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-}
-
-.home-loading-box .home-spinner {
-  width: 18px;
-  height: 18px;
-  border-width: 3px;
-}
-
-.home-loading-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 13px;
-}
-
-.home-loading-text strong {
-  font-weight: 700;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 /* URL example */
 .home-url-example {
   margin-top: 12px;

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { diagnoseFree, engineHealth } from "../api/backendApi";
 import MapPlaceSelect from "../components/MapPlaceSelect";
+import DiagnosisLoadingModal from "../components/DiagnosisLoadingModal";
 import "./home.css";
 
 const INDUSTRIES = [
@@ -58,17 +59,12 @@ export default function Home({ onResult }) {
 
   return (
     <div className="home-page">
-      {loading && (
-        <div className="home-loading-overlay">
-          <div className="home-loading-box">
-            <span className="home-spinner" />
-            <div className="home-loading-text">
-              <strong>진단을 진행하고 있어요...</strong>
-              <span>창을 닫지 말고 잠시만 기다려 주세요.</span>
-            </div>
-          </div>
-        </div>
-      )}
+      <DiagnosisLoadingModal
+        open={loading}
+        title="플레이스 진단을 진행 중..."
+        subtitle="페이지를 이탈하지 말고 잠시만 기다려주세요"
+        ariaTitleId="home-diagnosis-loading-title"
+      />
       <header className="home-header">
         <div className="home-logo">
           <svg width="48" height="48" viewBox="0 0 50 50" fill="none">
@@ -127,9 +123,7 @@ export default function Home({ onResult }) {
                 disabled={loading}
               />
               <button onClick={() => runWithUrl()} disabled={loading} className="home-btn-diagnose">
-                {loading ? (
-                  <span className="home-spinner" />
-                ) : (
+                {!loading && (
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                     <path d="M19 19L13 13M15 8C15 11.866 11.866 15 8 15C4.134 15 1 11.866 1 8C1 4.134 4.134 1 8 1C11.866 1 15 4.134 15 8Z"
                       stroke="white" strokeWidth="2" strokeLinecap="round"/>

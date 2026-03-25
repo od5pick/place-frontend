@@ -30,7 +30,112 @@
 .result-actions{margin-top:24px;display:flex;justify-content:center}
 .back-button{border:0;border-radius:14px;background:#12c05c;color:#fff;font-size:15px;font-weight:700;padding:13px 18px;cursor:pointer}
 
-/* 유료 컨설팅 카드 (원소스와 동일) */
+/* 유료 컨설팅 — 전체 자동 개선 카드 (화이트 박스 + CTA + 검색어 구역) */
+.result-paid-premium{
+  margin-top:28px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:22px 24px;
+  box-shadow:0 1px 3px rgba(15,23,42,.06);
+}
+.result-paid-premium-top{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+}
+.result-paid-premium-main{flex:1;min-width:220px}
+.result-paid-premium-title-row{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:10px 14px;
+  margin-bottom:8px;
+}
+.result-paid-premium-title{
+  margin:0;
+  position:relative;
+  padding-left:14px;
+  font-size:clamp(20px,2.2vw,24px);
+  font-weight:900;
+  letter-spacing:-.03em;
+  line-height:1.2;
+  color:#0b1220;
+}
+.result-paid-premium-title::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:.12em;
+  bottom:.12em;
+  width:4px;
+  border-radius:4px;
+  background:linear-gradient(180deg,#03c75a,#029e4a);
+  box-shadow:0 1px 3px rgba(3,199,90,.35);
+}
+.result-paid-premium-price{font-size:18px;font-weight:800;color:#048b40}
+.result-paid-premium-sub{margin:0 0 12px;font-size:14px;color:#6b7280;line-height:1.5}
+.result-paid-premium-features{margin:0;padding:0;list-style:none}
+.result-paid-premium-features li{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  color:#374151;
+  margin-bottom:8px;
+}
+.result-paid-premium-features li::before{
+  content:"✓";
+  color:#03c75a;
+  font-weight:800;
+  font-size:14px;
+  flex-shrink:0;
+}
+.result-paid-premium-cta{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 20px;
+  border:none;
+  border-radius:12px;
+  background:#03c75a;
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+  box-shadow:0 2px 10px rgba(3,199,90,.32);
+  transition:background .15s ease,transform .1s ease;
+}
+.result-paid-premium-cta:hover:not(:disabled){background:#02b350}
+.result-paid-premium-cta:active:not(:disabled){transform:scale(.98)}
+.result-paid-premium-cta:disabled{opacity:.75;cursor:not-allowed;box-shadow:none}
+.result-paid-premium-cta-icon{font-size:18px;line-height:1}
+.result-paid-premium-cta-text{line-height:1.2}
+.result-paid-premium-cta-arrow{font-size:22px;font-weight:300;line-height:1;opacity:.95;margin-left:2px}
+.result-paid-premium-divider{border:0;border-top:1px solid #f3f4f6;margin:20px 0 18px}
+.result-paid-premium-bottom{padding-top:0}
+.result-paid-premium-label{display:block;font-size:13px;font-weight:600;color:#6b7280;margin-bottom:8px}
+.result-paid-premium-input{
+  width:100%;
+  box-sizing:border-box;
+  padding:12px 14px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  font-size:14px;
+  background:#fff;
+}
+.result-paid-premium-input:focus{
+  outline:none;
+  border-color:#03c75a;
+  box-shadow:0 0 0 3px rgba(3,199,90,.15);
+}
+.result-paid-premium-hint{margin:8px 0 0;font-size:12px;color:#9ca3af;line-height:1.45}
+
+/* 레거시 유료 카드 클래스 (다른 화면 호환) */
 .result-paid-card{margin-top:28px;padding:20px 22px;background:rgba(3,199,90,.06);border:2px dashed rgba(3,199,90,.35);border-radius:18px}
 .result-paid-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .result-paid-title{margin:0;font-size:20px;font-weight:800;color:#1a2332}
