@@ -11,6 +11,76 @@
 .result-grade--d{background:#dc2626}
 .result-grade--f{background:#6b7280}
 .result-wrap{max-width:1200px;margin:0 auto;background:#f3f4f6}
+
+/* 상단 탭: 기존 밝은 바 + 선택 시만 초록 / 파랑 / 호박색 */
+.result-main-tablist{
+  display:flex;
+  flex-wrap:wrap;
+  gap:0;
+  margin:0 0 20px;
+  padding:4px;
+  background:#e5e7eb;
+  border-radius:14px;
+  border:1px solid #d1d5db;
+}
+.result-main-tab{
+  flex:1;
+  min-width:0;
+  padding:12px 14px;
+  border:none;
+  border-radius:11px;
+  background:transparent;
+  font-size:15px;
+  font-weight:700;
+  color:#6b7280;
+  cursor:pointer;
+  transition:background .15s ease,color .15s ease,box-shadow .15s ease;
+}
+.result-main-tab:hover:not(.result-main-tab--active){
+  color:#374151;
+  background:rgba(255,255,255,.45);
+}
+/* 선택: 진단=초록, 블로그=파랑, 기타=호박색 */
+.result-main-tab--diagnosis.result-main-tab--active{
+  background:linear-gradient(180deg,#22c55e,#16a34a);
+  color:#fff;
+  box-shadow:0 2px 10px rgba(22,163,74,.35);
+}
+.result-main-tab--blog.result-main-tab--active{
+  background:linear-gradient(180deg,#3b82f6,#2563eb);
+  color:#fff;
+  box-shadow:0 2px 10px rgba(37,99,235,.35);
+}
+.result-main-tab--other.result-main-tab--active{
+  background:linear-gradient(180deg,#fbbf24,#f59e0b);
+  color:#1c1917;
+  box-shadow:0 2px 10px rgba(245,158,11,.4);
+}
+.result-main-tabpanel{min-height:120px}
+.result-tab-placeholder{
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:28px 24px;
+  text-align:center;
+}
+.result-tab-placeholder--blog{
+  border-color:#bfdbfe;
+  border-top:4px solid #2563eb;
+  background:linear-gradient(180deg,#eff6ff 0%,#fff 42%);
+  box-shadow:0 4px 18px rgba(37,99,235,.1);
+}
+.result-tab-placeholder--other{
+  border-color:#fde68a;
+  border-top:4px solid #d97706;
+  background:linear-gradient(180deg,#fffbeb 0%,#fff 45%);
+  box-shadow:0 4px 18px rgba(217,119,6,.1);
+}
+.result-tab-placeholder--compact{padding:16px 20px;text-align:left}
+.result-tab-placeholder-title{margin:0 0 10px;font-size:20px;font-weight:800;color:#223047}
+.result-tab-placeholder--blog .result-tab-placeholder-title{color:#1d4ed8}
+.result-tab-placeholder--other .result-tab-placeholder-title{color:#b45309}
+.result-tab-placeholder-desc{margin:0;font-size:14px;color:#6b7280;line-height:1.6}
 .result-top{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:8px}
 .result-total{font-size:64px;line-height:1;font-weight:800;color:#11c05b}
 .result-grade{width:58px;height:58px;border-radius:50%;background:#f28a16;color:#fff;font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center}
