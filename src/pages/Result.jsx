@@ -1,21 +1,16 @@
 import React, { useState } from "react";
 import DiagnosisLoadingModal from "../components/DiagnosisLoadingModal";
 import { diagnosePaid, API_BASE_URL } from "../api/backendApi";
-import { RESULT_MAIN_TABS } from "./result/resultConstants";
 import {
   getInner,
-  getLogs,
   getPlaceDisplayName,
   placeAddress,
 } from "./result/resultDataUtils";
-import ResultBlogTab from "./result/ResultBlogTab";
 import ResultDiagnosisTab from "./result/ResultDiagnosisTab";
-import ResultOtherTab from "./result/ResultOtherTab";
 import "./result.css";
 
-export default function Result({ data, onBack }) {
-  const [resultMainTab, setResultMainTab] = useState("diagnosis");
-  const [showLogs, setShowLogs] = useState(true);
+/** embedded: App 공통 헤더 안에서 렌더링 시 레이아웃만 조정 */
+export default function Result({ data, onBack, embedded = false }) {
   const [paidData, setPaidData] = useState(null);
   const [paidLoading, setPaidLoading] = useState(false);
   const [paidError, setPaidError] = useState("");
@@ -30,8 +25,6 @@ export default function Result({ data, onBack }) {
   const inner = getInner(data);
   const placeNameForApi = getPlaceDisplayName(data) || inner?.placeName || inner?.name || "";
   const keywordsForApi = inner?.keywords || "";
-
-  const logs = getLogs(data);
 
   async function fetchPaidReviewConsultingBody(dataArg) {
     const url = placeUrl || dataArg?.placeUrl;
@@ -187,7 +180,7 @@ export default function Result({ data, onBack }) {
   };
 
   return (
-    <div className="result-page">
+    <div className={"result-page" + (embedded ? " result-page--embedded" : "")}>
       <div className="result-wrap">
         {getPlaceDisplayName(data) && (
           <div className="result-place-info">
@@ -198,52 +191,22 @@ export default function Result({ data, onBack }) {
           </div>
         )}
 
-        <div className="result-main-tablist" role="tablist" aria-label="진단 결과 구역">
-          {RESULT_MAIN_TABS.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              id={`result-tab-trigger-${id}`}
-              aria-selected={resultMainTab === id}
-              aria-controls={`result-tab-panel-${id}`}
-              className={`result-main-tab result-main-tab--${id}${resultMainTab === id ? " result-main-tab--active" : ""}`}
-              onClick={() => setResultMainTab(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {resultMainTab === "diagnosis" && (
-          <ResultDiagnosisTab
-            data={data}
-            placeUrl={placeUrl}
-            paidData={paidData}
-            paidLoading={paidLoading}
-            paidError={paidError}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            runPaidDiagnosis={runPaidDiagnosis}
-            consultingData={consultingData}
-            consultingLoading={consultingLoading}
-            paidReviewConsultingLoading={paidReviewConsultingLoading}
-            paidReviewConsultingResult={paidReviewConsultingResult}
-            handleConsultingClick={handleConsultingClick}
-            onBack={onBack}
-          />
-        )}
-
-        {resultMainTab === "blog" && <ResultBlogTab />}
-
-        {resultMainTab === "other" && (
-          <ResultOtherTab
-            logs={logs}
-            showLogs={showLogs}
-            setShowLogs={setShowLogs}
-            onBack={onBack}
-          />
-        )}
+        <ResultDiagnosisTab
+          data={data}
+          placeUrl={placeUrl}
+          paidData={paidData}
+          paidLoading={paidLoading}
+          paidError={paidError}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          runPaidDiagnosis={runPaidDiagnosis}
+          consultingData={consultingData}
+          consultingLoading={consultingLoading}
+          paidReviewConsultingLoading={paidReviewConsultingLoading}
+          paidReviewConsultingResult={paidReviewConsultingResult}
+          handleConsultingClick={handleConsultingClick}
+          onBack={onBack}
+        />
       </div>
 
       <DiagnosisLoadingModal

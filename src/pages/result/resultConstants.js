@@ -15,9 +15,3 @@ export const RESULT_CATEGORIES = [
   { key: "reviews", title: "리뷰" },
   { key: "price", title: "가격/메뉴" },
 ];
-
-export const RESULT_MAIN_TABS = [
-  { id: "diagnosis", label: "진단" },
-  { id: "blog", label: "블로그" },
-  { id: "other", label: "기타" },
-];

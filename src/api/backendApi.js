@@ -164,6 +164,83 @@ export async function placeResolve(title) {
   return res.json();
 }
 
+/** 네이버 블로그 상위노출용 GPT 컨설팅. referenceImageDataUrl: 블로그+이미지 시 참고 사진(data URL). skipGeminiImages: GPT만(관리자 테스트). blogImageModeSystemPrompt: 이미지 모드일 때 system 프롬프트 전체 덮어쓰기(선택) */
+export async function postBlogConsulting({
+  industry,
+  region,
+  existingTopics,
+  imageMode = false,
+  referenceImageDataUrl = null,
+  skipGeminiImages = false,
+  blogImageModeSystemPrompt = null,
+}) {
+  const payload = {
+    industry: industry || "hairshop",
+    region: String(region || "").trim(),
+    existingTopics: Array.isArray(existingTopics) ? existingTopics : [],
+    imageMode: Boolean(imageMode),
+    skipGeminiImages: Boolean(skipGeminiImages),
+  };
+  const ref = referenceImageDataUrl != null && String(referenceImageDataUrl).trim();
+  if (ref) {
+    payload.referenceImageDataUrl = String(referenceImageDataUrl).trim();
+  }
+  const sys =
+    blogImageModeSystemPrompt != null && String(blogImageModeSystemPrompt).trim()
+      ? String(blogImageModeSystemPrompt).trim()
+      : "";
+  if (sys) {
+    payload.blogImageModeSystemPrompt = sys;
+  }
+  return jsonFetch("/api/engine/blog-consulting", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+/** GPT로 블로그 추천 주제 3개 */
+export async function postBlogTopicSuggestions({ industry, region, existingTopics }) {
+  return jsonFetch("/api/engine/blog-topic-suggestions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      industry: industry || "hairshop",
+      region: String(region || "").trim(),
+      existingTopics: Array.isArray(existingTopics) ? existingTopics : [],
+    }),
+  });
+}
+
+/**
+ * Gemini 이미지 생성 (모델: gemini-3.1-flash-image-preview)
+ * @param {string} prompt
+ * @param {{ format?: "json" | "binary", referenceImageDataUrl?: string }} [opts] — 참고 이미지 data URL 시 고정·유지 후 prompt 반영
+ * @returns {Promise<{success,mimeType,base64,dataUrl,model,referenceImageUsed}|Blob>}
+ */
+export async function postGenerateImage(prompt, opts = {}) {
+  const format = opts.format === "binary" ? "binary" : "json";
+  const q = format === "binary" ? "?format=binary" : "";
+  const payload = { prompt: String(prompt || "").trim() };
+  const ref = opts.referenceImageDataUrl != null && String(opts.referenceImageDataUrl).trim();
+  if (ref) {
+    payload.referenceImageDataUrl = String(opts.referenceImageDataUrl).trim();
+  }
+  const res = await fetch(`${API_BASE_URL}/api/v1/images/generate${q}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status}${text ? ": " + text : ""}`);
+  }
+  if (format === "binary") {
+    return res.blob();
+  }
+  return res.json();
+}
+
 export async function saveResult(payload) {
   return jsonFetch("/api/results", {
     method: "POST",

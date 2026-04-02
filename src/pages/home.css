@@ -1,39 +1,916 @@
 /* Home Page - PC 버전 넓은 해상도 */
 .home-page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f3f4f6;
-  padding: 0 24px 60px;
+  padding: 0 0 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
   color: #1f2937;
 }
 
-/* Header */
-.home-header {
-  padding: 40px 0 28px;
+/* 상단 바: 홈 / 플레이스 / 블로그 / 기타 */
+.home-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.home-topbar-inner {
   max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.home-topbar-logo {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 30px;
+  font-weight: 800;
+  color: #03c75a;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.home-topbar-logo:hover {
+  color: #02b350;
+}
+
+.home-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex: 1;
+}
+
+.home-topbar-link {
+  border: none;
+  background: none;
+  padding: 8px 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  position: relative;
+}
+
+.home-topbar-link:hover {
+  color: #03c75a;
+}
+
+.home-topbar-link--active {
+  color: #03c75a;
+}
+
+.home-topbar-link--active::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 2px;
+  height: 2px;
+  background: #03c75a;
+  border-radius: 1px;
+}
+
+.home-tab-main {
+  flex: 1;
+}
+
+/* 공통 헤더 하위에 붙은 진단 결과: 전체 높이·패딩 완화 */
+.result-page--embedded {
+  min-height: 0;
+  flex: 1;
+  padding: 20px 24px 32px;
+  box-sizing: border-box;
+}
+
+.home-tab-page {
+  padding: 24px 24px 40px;
+  box-sizing: border-box;
+}
+
+.home-tab-page.home-section-place {
+  padding-top: 24px;
+}
+
+.home-blog-standalone,
+.home-marketing-standalone {
+  max-width: 720px;
   margin: 0 auto;
 }
 
-.home-logo {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.home-logo-text h1 {
-  margin: 0;
-  font-size: 26px;
+.home-mkt-page-title {
+  margin: 0 0 12px;
+  font-size: 22px;
   font-weight: 800;
   color: #1a2332;
 }
 
-.home-logo-text p {
-  margin: 6px 0 0;
-  font-size: 15px;
-  color: #6b7280;
+.home-mkt-toggle-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 20px 22px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.05);
 }
 
-/* Card */
+.home-mkt-channel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.home-mkt-channel-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.home-mkt-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 6px;
+  border: none;
+  border-radius: 999px;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s ease;
+}
+
+.home-mkt-switch--on {
+  background: #d1fae5;
+}
+
+.home-mkt-switch-track {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: #9ca3af;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.home-mkt-switch--on .home-mkt-switch-track {
+  background: #03c75a;
+}
+
+.home-mkt-switch-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.home-mkt-switch--on .home-mkt-switch-knob {
+  transform: translateX(18px);
+}
+
+.home-mkt-switch-state {
+  font-size: 13px;
+  font-weight: 800;
+  color: #6b7280;
+  min-width: 28px;
+  text-align: left;
+}
+
+.home-mkt-switch--on .home-mkt-switch-state {
+  color: #047857;
+}
+
+.home-mkt-section-lead {
+  margin-top: 8px;
+}
+
+.home-mkt-channel-block {
+  margin-top: 24px;
+  padding: 20px 22px;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+}
+
+.home-mkt-channel-block-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.home-mkt-channel-block-desc {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+.home-mkt-channel-block--note {
+  margin-top: 16px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.home-mkt-channel-block-desc--warn {
+  color: #92400e;
+  font-weight: 500;
+}
+
+.home-blog-lead {
+  margin: 0 0 20px;
+  font-size: 15px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.home-blog-industry-row {
+  margin-bottom: 8px;
+  max-width: 320px;
+}
+
+.home-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.home-topbar-muted {
+  color: #9ca3af;
+}
+
+.home-topbar-divider {
+  color: #d1d5db;
+  user-select: none;
+}
+
+.home-topbar-admin-test {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #fcd34d;
+  background: #fffbeb;
+  color: #b45309;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.home-topbar-admin-test:hover {
+  background: #fef3c7;
+  border-color: #fbbf24;
+}
+.home-topbar-admin-test--active {
+  background: #fde68a;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+/* 관리자: 블로그+이미지 Gemini 테스트 */
+.home-section-admin-blog-test {
+  padding: 28px 20px 48px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.home-admin-blog-test-inner {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 24px 22px 28px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.home-admin-blog-test-step {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.home-admin-blog-test-step:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.home-admin-blog-test-step-title {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2937;
+}
+.home-admin-blog-test-req {
+  color: #dc2626;
+  font-weight: 700;
+}
+.home-admin-blog-test-select,
+.home-admin-blog-test-input {
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.home-admin-blog-test-input:focus,
+.home-admin-blog-test-select:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+.home-admin-blog-test-textarea--sm {
+  min-height: 96px;
+  font-family: inherit;
+}
+.home-admin-blog-test-gpt-btn {
+  margin-top: 14px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+.home-admin-blog-test-gpt-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+.home-admin-blog-test-gpt-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.home-admin-blog-test-prompt-list {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.home-admin-blog-test-prompt-chip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #374151;
+  cursor: pointer;
+  font-family: ui-monospace, monospace;
+  transition: border-color 0.15s, background 0.15s;
+}
+.home-admin-blog-test-prompt-chip:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #fff;
+}
+.home-admin-blog-test-prompt-chip--on {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+.home-admin-blog-test-prompt-idx {
+  font-weight: 800;
+  color: #1d4ed8;
+  margin-right: 6px;
+}
+.home-admin-blog-test-gpt-details {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #6b7280;
+}
+.home-admin-blog-test-gpt-pre {
+  margin: 10px 0 0;
+  padding: 12px;
+  max-height: 280px;
+  overflow: auto;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.home-admin-blog-test-gpt-pre--body {
+  max-height: min(60vh, 520px);
+  margin-top: 8px;
+}
+.home-admin-blog-test-subtitle {
+  margin: 18px 0 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #111827;
+}
+.home-admin-blog-test-step .home-admin-blog-test-subtitle:first-of-type {
+  margin-top: 0;
+}
+.home-admin-blog-test-pipeline-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+.home-admin-blog-test-pipeline-img-cell {
+  min-width: 0;
+}
+.home-admin-blog-test-pipeline-img-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+.home-admin-blog-test-pipeline-img-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: contain;
+}
+.home-admin-blog-test-pipeline-img-cap {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #6b7280;
+  word-break: break-word;
+}
+.home-admin-blog-test-title {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+}
+.home-admin-blog-test-lead {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+.home-admin-blog-test-lead code {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #374151;
+}
+.home-admin-blog-test-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin: 16px 0 8px;
+}
+.home-admin-blog-test-label:first-of-type {
+  margin-top: 0;
+}
+.home-admin-blog-test-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: ui-monospace, monospace;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 140px;
+}
+.home-admin-blog-test-textarea:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+.home-admin-blog-test-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+.home-admin-blog-test-file-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.home-admin-blog-test-file-label {
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+}
+.home-admin-blog-test-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+.home-admin-blog-test-file-fake {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+.home-admin-blog-test-file-label:hover .home-admin-blog-test-file-fake {
+  background: #f3f4f6;
+}
+.home-admin-blog-test-clear {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.home-admin-blog-test-preview-wrap {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  display: inline-block;
+  max-width: 100%;
+}
+.home-admin-blog-test-preview {
+  display: block;
+  max-width: min(100%, 320px);
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.home-admin-blog-test-error {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13px;
+}
+.home-admin-blog-test-submit {
+  margin-top: 18px;
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+.home-admin-blog-test-submit:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+.home-admin-blog-test-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.home-admin-blog-test-result {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #e5e7eb;
+}
+.home-admin-blog-test-result-title {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+}
+.home-admin-blog-test-meta {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: #6b7280;
+}
+.home-admin-blog-test-result-img-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+.home-admin-blog-test-result-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: contain;
+}
+.home-admin-blog-test-details {
+  margin-top: 14px;
+  font-size: 13px;
+  color: #6b7280;
+}
+.home-admin-blog-test-pre {
+  margin: 8px 0 0;
+  padding: 10px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  font-size: 11px;
+  overflow: auto;
+  word-break: break-all;
+}
+
+/* 히어로 */
+.home-hero {
+  background: linear-gradient(135deg, #03c75a 0%, #029e4a 55%, #027a3a 100%);
+  color: #fff;
+  padding: 56px 24px 64px;
+}
+
+.home-hero-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-hero-title {
+  margin: 0;
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.home-hero-sub {
+  margin: 16px 0 0;
+  font-size: clamp(15px, 2vw, 18px);
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+.home-hero-btns {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.home-hero-btn {
+  padding: 14px 24px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.12s ease, box-shadow 0.2s;
+}
+
+.home-hero-btn:active {
+  transform: scale(0.98);
+}
+
+.home-hero-btn--outline {
+  background: #fff;
+  color: #03c75a;
+  border: 2px solid #fff;
+}
+
+.home-hero-btn--outline:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.home-hero-btn--solid {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+}
+
+.home-hero-btn--solid:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 단계 · 특징 공통 */
+.home-section-heading {
+  margin: 0 0 24px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a2332;
+}
+
+.home-steps {
+  padding: 48px 24px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.home-step-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 22px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  text-align: center;
+}
+
+.home-step-icon {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.home-step-card h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a2332;
+}
+
+.home-step-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+.home-features {
+  padding: 24px 24px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.home-feature-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 22px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.home-feature-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.home-feature-card h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a2332;
+}
+
+.home-feature-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+/* 앵커 섹션 (네비 스크롤 여백) */
+.home-anchor {
+  scroll-margin-top: 72px;
+  padding: 0 24px;
+}
+
+.home-section-place {
+  padding-bottom: 8px;
+}
+
+.home-section-marketing,
+.home-section-etc {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.home-subsection-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.04);
+}
+
+.home-subsection-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1d4ed8;
+}
+
+.home-section-marketing .home-subsection-title {
+  color: #1d4ed8;
+}
+
+.home-subsection-desc {
+  margin: 0;
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.home-etc-columns {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.home-etc-block-title {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a2332;
+}
+
+#home-top {
+  scroll-margin-top: 72px;
+}
+
+#section-features {
+  scroll-margin-top: 72px;
+}
+
+.home-cta-banner {
+  box-sizing: border-box;
+  margin: 32px auto 48px;
+  max-width: min(1200px, calc(100% - 48px));
+  background: linear-gradient(135deg, #03c75a 0%, #029e4a 100%);
+  border-radius: 16px;
+  padding: 36px 28px;
+  text-align: center;
+  color: #fff;
+}
+
+.home-cta-text {
+  margin: 0 0 20px;
+  font-size: clamp(16px, 2.5vw, 19px);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.home-cta-banner-btn {
+  padding: 14px 32px;
+  border-radius: 999px;
+  border: none;
+  background: #fff;
+  color: #03c75a;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.home-cta-banner-btn:hover {
+  filter: brightness(1.03);
+}
+
+.home-footer {
+  margin-top: auto;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+  background: #e5e7eb;
+}
+
+/* Card (플레이스 진단) */
 .home-card {
   max-width: 1200px;
   margin: 0 auto;
@@ -204,7 +1081,8 @@
 /* Health */
 .home-health-row {
   max-width: 1200px;
-  margin: 24px auto 0;
+  margin: 20px auto 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -242,11 +1120,27 @@
   .home-card {
     padding: 24px 20px;
   }
-  .home-header {
-    padding: 28px 0 20px;
+  .home-topbar-inner {
+    flex-direction: column;
+    align-items: stretch;
   }
-  .home-logo-text h1 {
-    font-size: 22px;
+  .home-topbar-nav {
+    justify-content: flex-start;
+    order: 3;
+    width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid #f3f4f6;
+  }
+  .home-topbar-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+  .home-steps-grid,
+  .home-features-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-etc-columns {
+    grid-template-columns: 1fr;
   }
 }
 
